@@ -11,6 +11,7 @@ All templates work with the **trace.csv** produced by the [Moderne CLI](https://
 | Template | Description | Minimum CLI Command |
 |----------|-------------|---------------------|
 | [Recipe Run Trend](templates/recipe-run-trend/) | Monthly adoption trend — recipe runs, distinct recipes, and unique users over time | `mod run` |
+| [Top Users](templates/top-users/) | User engagement ranking by recipe runs and commits | `mod git commit` |
 
 ## Getting Started
 
@@ -27,9 +28,12 @@ moderne-bi-templates/
 ├── data-dictionary/
 │   └── trace-csv.md          # Full trace.csv column reference
 ├── templates/
-│   └── recipe-run-trend/     # One folder per template
-│       ├── README.md          # Report description and example output
-│       └── recipe-run-trend.sql
+│   ├── recipe-run-trend/     # One folder per template
+│   │   ├── README.md          # Report description and example output
+│   │   └── recipe-run-trend.sql
+│   └── top-users/
+│       ├── README.md
+│       └── top-users.sql
 ```
 
 Each template is a self-contained folder with a README describing the report and a SQL file you can run directly against your trace data.
