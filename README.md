@@ -16,6 +16,7 @@ All templates work with the **trace.csv** produced by the [Moderne CLI](https://
 | [Top Recipes with Commits](templates/top-recipes-with-commits/) | Recipes that produce real committed code changes | `mod git commit` |
 | [Commit Trend](templates/commit-trend/) | Monthly trend correlating recipe execution with committed code impact | `mod git commit` |
 | [Commit Activity](templates/commit-activity/) | Monthly committed output — successful commits, repos changed, and hours saved | `mod git commit` |
+| [Dashboard KPIs](templates/dashboard-kpis/) | Executive-level snapshot — all-time totals and monthly trend | `mod git commit` |
 
 ## Getting Started
 
@@ -47,9 +48,12 @@ moderne-bi-templates/
 │   ├── commit-trend/
 │   │   ├── README.md
 │   │   └── commit-trend.sql
-│   └── commit-activity/
+│   ├── commit-activity/
+│   │   ├── README.md
+│   │   └── commit-activity.sql
+│   └── dashboard-kpis/
 │       ├── README.md
-│       └── commit-activity.sql
+│       └── dashboard-kpis.sql
 ```
 
 Each template is a self-contained folder with a README describing the report and a SQL file you can run directly against your trace data.
