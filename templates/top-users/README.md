@@ -23,6 +23,10 @@ A ranked list of users sorted by activity level, with two metrics per user:
 
 Dual horizontal bar chart — one series for recipe runs, one for commits — sorted descending by recipe runs. Expect a long-tail distribution where a small number of power users account for most activity.
 
+![Top Users](images/top-users.png)
+
+See [top-users.ipynb](top-users.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/top-users.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
