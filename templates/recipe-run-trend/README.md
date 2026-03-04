@@ -22,6 +22,10 @@ A monthly (or weekly) view of three adoption metrics:
 
 Grouped bar chart with three series (one per metric) on a shared time axis. Alternatively, a multi-line chart works well for spotting trends across longer time ranges.
 
+![Recipe Run Trend](images/recipe-run-trend.png)
+
+See [recipe-run-trend.ipynb](recipe-run-trend.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/recipe-run-trend.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
