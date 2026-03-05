@@ -1,0 +1,11 @@
+recipe_id,recipe_name,commits,unique_users,estimated_hours_saved
+org.openrewrite.java.migrate.UpgradeToJava17,Migrate to Java 17,448,31,840.5
+org.openrewrite.staticanalysis.CommonStaticAnalysis,Common static analysis,318,28,620.2
+org.openrewrite.java.OrderImports,Order imports,215,19,280.0
+org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_4,Upgrade Spring Boot 3.4,178,24,510.8
+org.openrewrite.java.RemoveUnusedImports,Remove unused imports,142,22,185.3
+org.openrewrite.java.testing.junit5.JUnit5BestPractices,JUnit 5 best practices,98,15,320.1
+org.openrewrite.java.logging.Log4jToSlf4j,Log4j to SLF4J,76,11,210.6
+org.openrewrite.java.migrate.jakarta.JakartaEE10,Migrate to Jakarta EE 10,64,9,390.4
+org.openrewrite.java.dependencies.DependencyVulnerabilityCheck,Dependency vulnerability check,41,7,95.2
+org.openrewrite.java.cleanup.UnnecessaryParentheses,Unnecessary parentheses,28,12,42.7

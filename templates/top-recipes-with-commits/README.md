@@ -22,6 +22,10 @@ A ranked list of recipes filtered to only those with successful commits:
 
 Horizontal bar chart sorted by commit count. Pair with the [Top Recipes](../top-recipes/) template to compare total runs vs. committed results — the gap between the two reveals recipes that are explored but not applied.
 
+![Top Recipes with Commits](images/top-recipes-with-commits.png)
+
+See [top-recipes-with-commits.ipynb](top-recipes-with-commits.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/top-recipes-with-commits.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
