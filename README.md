@@ -36,38 +36,31 @@ Templates are sorted by [trace hierarchy](https://docs.moderne.io/user-documenta
 ```
 moderne-bi-templates/
 ├── data-dictionary/
-│   └── trace-csv.md          # Full trace.csv column reference
-├── templates/
-│   ├── recipe-run-trend/     # One folder per template
-│   │   ├── README.md          # Report description and example output
-│   │   └── recipe-run-trend.sql
-│   ├── top-users/
-│   │   ├── README.md
-│   │   └── top-users.sql
-│   ├── top-recipes/
-│   │   ├── README.md
-│   │   └── top-recipes.sql
-│   ├── top-recipes-with-commits/
-│   │   ├── README.md
-│   │   └── top-recipes-with-commits.sql
-│   ├── commit-trend/
-│   │   ├── README.md
-│   │   └── commit-trend.sql
-│   ├── commit-activity/
-│   │   ├── README.md
-│   │   └── commit-activity.sql
-│   ├── dashboard-kpis/
-│   │   ├── README.md
-│   │   └── dashboard-kpis.sql
-│   ├── security-recipe-run-trend/
-│   │   ├── README.md
-│   │   └── security-recipe-run-trend.sql
-│   ├── build-tool-distribution/
-│   │   ├── README.md
-│   │   └── build-tool-distribution.sql
-│   └── build-success-trend/
-│       ├── README.md
-│       └── build-success-trend.sql
+│   └── trace-csv.md              # Full trace.csv column reference
+├── samples/                          # Fabricated CSV data for each template
+│   ├── build-success-trend.csv
+│   ├── build-tool-summary.csv
+│   ├── build-tool-versions.csv
+│   ├── commit-activity.csv
+│   ├── commit-trend.csv
+│   ├── dashboard-kpis-summary.csv
+│   ├── dashboard-kpis-trend.csv
+│   ├── recipe-run-trend.csv
+│   ├── security-recipe-run-trend.csv
+│   ├── top-recipes.csv
+│   ├── top-recipes-with-commits.csv
+│   └── top-users.csv
+└── templates/
+    ├── build-success-trend/
+    ├── build-tool-distribution/
+    ├── commit-activity/
+    ├── commit-trend/
+    ├── dashboard-kpis/
+    ├── recipe-run-trend/
+    ├── security-recipe-run-trend/
+    ├── top-recipes/
+    ├── top-recipes-with-commits/
+    └── top-users/                    # Each contains README, SQL, notebook, and images/
 ```
 
-Each template is a self-contained folder with a README describing the report and a SQL file you can run directly against your trace data.
+Each template is a self-contained folder with a README, SQL query, Jupyter notebook visualization, and screenshot. Sample CSV data in the `samples/` directory lets you run any notebook immediately.
