@@ -1,6 +1,6 @@
 # Moderne BI Templates
 
-Starter templates for building reports and dashboards from Moderne CLI telemetry data. These templates provide SQL queries and documentation that you can import into your BI tool of choice — Power BI, Tableau, Looker, Grafana, AWS QuickSight, or any tool that supports SQL.
+Starter templates for building reports and dashboards from Moderne CLI telemetry data. Each template includes a SQL query, Jupyter notebook visualization, sample data, and documentation — ready to import into your BI tool of choice (Power BI, Tableau, Looker, Grafana, AWS QuickSight, or any tool that supports SQL).
 
 ## Data Source
 
@@ -28,7 +28,7 @@ Templates are sorted by [trace hierarchy](https://docs.moderne.io/user-documenta
 1. Ensure your Moderne CLI is configured to publish trace data (see [CLI telemetry docs](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry))
 2. Choose a template from the table above
 3. Review the template's README for the report description, required fields, and example output
-4. Copy the SQL query into your BI tool or query engine (Athena, Trino, BigQuery, etc.)
+4. Run the Jupyter notebook with sample data to preview the visualization, or copy the SQL query into your BI tool or query engine (Athena, Trino, BigQuery, etc.)
 5. Customize as needed for your organization
 
 ## Repository Structure
@@ -37,7 +37,7 @@ Templates are sorted by [trace hierarchy](https://docs.moderne.io/user-documenta
 moderne-bi-templates/
 ├── data-dictionary/
 │   └── trace-csv.md              # Full trace.csv column reference
-├── samples/                          # Fabricated CSV data for each template
+├── samples/                          # Sample CSV data for each template
 │   ├── build-success-trend.csv
 │   ├── build-tool-summary.csv
 │   ├── build-tool-versions.csv
