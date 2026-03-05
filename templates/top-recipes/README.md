@@ -22,6 +22,10 @@ A ranked list of recipes sorted by total runs, with three metrics per recipe:
 
 Treemap sized by recipe runs with color intensity by unique users. Alternatively, a horizontal bar chart sorted by run count works well for a simpler view.
 
+![Top Recipes](images/top-recipes.png)
+
+See [top-recipes.ipynb](top-recipes.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/top-recipes.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
