@@ -8,18 +8,20 @@ All templates work with the **trace.csv** produced by the [Moderne CLI](https://
 
 ## Available Templates
 
+Templates are sorted by [trace hierarchy](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry#how-telemetry-is-generated) — earlier pipeline stages first, broadest applicability within each group second.
+
 | Template | Description | Minimum CLI Command |
 |----------|-------------|---------------------|
+| [Build Success Trend](templates/build-success-trend/) | Monthly build health — success vs. failure rates over time | `mod build` |
+| [Build Tool Distribution](templates/build-tool-distribution/) | Build tool and version distribution across successfully built repositories | `mod build` |
 | [Recipe Run Trend](templates/recipe-run-trend/) | Monthly adoption trend — recipe runs, distinct recipes, and unique users over time | `mod run` |
-| [Top Users](templates/top-users/) | User engagement ranking by recipe runs and commits | `mod git commit` |
 | [Top Recipes](templates/top-recipes/) | Most-used recipes by run count, unique users, and repos searched | `mod run` |
-| [Top Recipes with Commits](templates/top-recipes-with-commits/) | Recipes that produce real committed code changes | `mod git commit` |
+| [Dashboard KPIs](templates/dashboard-kpis/) | Executive-level snapshot — all-time totals and monthly trend | `mod git commit` |
 | [Commit Trend](templates/commit-trend/) | Monthly trend correlating recipe execution with committed code impact | `mod git commit` |
 | [Commit Activity](templates/commit-activity/) | Monthly committed output — successful commits, repos changed, and hours saved | `mod git commit` |
-| [Dashboard KPIs](templates/dashboard-kpis/) | Executive-level snapshot — all-time totals and monthly trend | `mod git commit` |
+| [Top Users](templates/top-users/) | User engagement ranking by recipe runs and commits | `mod git commit` |
+| [Top Recipes with Commits](templates/top-recipes-with-commits/) | Recipes that produce real committed code changes | `mod git commit` |
 | [Security Recipe Run Trend](templates/security-recipe-run-trend/) | Monthly security remediation trend — committed fixes, repos fixed, and hours saved | `mod git commit` |
-| [Build Tool Distribution](templates/build-tool-distribution/) | Build tool and version distribution across successfully built repositories | `mod build` |
-| [Build Success Trend](templates/build-success-trend/) | Monthly build health — success vs. failure rates over time | `mod build` |
 
 ## Getting Started
 
