@@ -24,6 +24,10 @@ A monthly (or weekly) view of five security remediation metrics:
 
 Dual-axis chart — bars for successful commits by month with a line overlay for estimated hours saved. Files remediated and unique repos fixed work well as secondary series or separate KPI cards above the chart.
 
+![Security Recipe Run Trend](images/security-recipe-run-trend.png)
+
+See [security-recipe-run-trend.ipynb](security-recipe-run-trend.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/security-recipe-run-trend.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
