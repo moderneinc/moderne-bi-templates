@@ -32,6 +32,12 @@ The same metrics broken down by month to show adoption trajectory.
 
 KPI cards (large single numbers) across the top of a dashboard, with a multi-series area or bar chart below showing the monthly trend. This is the natural landing page for any BI dashboard built from Moderne data.
 
+![Dashboard KPIs Summary](images/dashboard-kpis-summary.png)
+
+![Dashboard KPIs Trend](images/dashboard-kpis-trend.png)
+
+See [dashboard-kpis.ipynb](dashboard-kpis.ipynb) for a ready-to-run Jupyter notebook that produces these visualizations from sample data ([summary](../../samples/dashboard-kpis-summary.csv), [trend](../../samples/dashboard-kpis-trend.csv)).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
