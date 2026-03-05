@@ -22,6 +22,10 @@ A monthly view of committed recipe changes with three metrics:
 
 Stacked bar chart for successful commits by month with a line overlay for unique repos changed. Estimated hours saved works well as a secondary y-axis or as a separate KPI card.
 
+![Commit Activity](images/commit-activity.png)
+
+See [commit-activity.ipynb](commit-activity.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/commit-activity.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
