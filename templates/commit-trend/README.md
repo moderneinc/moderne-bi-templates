@@ -26,6 +26,10 @@ A monthly view of seven metrics that together tell the full story of recipe adop
 
 Multi-series bar/line chart with a shared monthly time axis. Use bars for volume metrics (commit jobs, recipe runs) and line overlays for unique counts (users, recipes, repos). Hours saved works well as a secondary y-axis.
 
+![Commit Trend](images/commit-trend.png)
+
+See [commit-trend.ipynb](commit-trend.ipynb) for a ready-to-run Jupyter notebook that produces this visualization from [sample data](../../samples/commit-trend.csv).
+
 ## Trace.csv Fields Used
 
 | Field | Stage | Purpose |
