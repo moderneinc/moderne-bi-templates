@@ -19,6 +19,7 @@ All templates work with the **trace.csv** produced by the [Moderne CLI](https://
 | [Dashboard KPIs](templates/dashboard-kpis/) | Executive-level snapshot — all-time totals and monthly trend | `mod git commit` |
 | [Security Recipe Run Trend](templates/security-recipe-run-trend/) | Monthly security remediation trend — committed fixes, repos fixed, and hours saved | `mod git commit` |
 | [Build Tool Distribution](templates/build-tool-distribution/) | Build tool and version distribution across successfully built repositories | `mod build` |
+| [Build Success Trend](templates/build-success-trend/) | Monthly build health — success vs. failure rates over time | `mod build` |
 
 ## Getting Started
 
@@ -59,9 +60,12 @@ moderne-bi-templates/
 │   ├── security-recipe-run-trend/
 │   │   ├── README.md
 │   │   └── security-recipe-run-trend.sql
-│   └── build-tool-distribution/
+│   ├── build-tool-distribution/
+│   │   ├── README.md
+│   │   └── build-tool-distribution.sql
+│   └── build-success-trend/
 │       ├── README.md
-│       └── build-tool-distribution.sql
+│       └── build-success-trend.sql
 ```
 
 Each template is a self-contained folder with a README describing the report and a SQL file you can run directly against your trace data.
