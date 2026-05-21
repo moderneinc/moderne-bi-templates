@@ -17,8 +17,11 @@ Each CLI command produces a trace that includes its own stage plus all prior sta
 | `mod git add` | Sync + Build + Run + Apply + Add |
 | `mod git commit` | Sync + Build + Run + Apply + Add + Commit |
 | `mod git push` | Sync + Build + Run + Apply + Add + Commit + Push |
+| `mod publish` | Sync + Build + Publish |
 | `mod exec` | Exec (standalone) |
 | `mod git checkout` | Checkout (standalone) |
+
+`mod publish` branches off after Build rather than continuing the Run → Apply → Commit → Push chain, so its traces contain Sync + Build + Publish columns and none of the Run/Apply/Add/Commit/Push columns.
 
 ## Column Reference
 
@@ -144,7 +147,22 @@ Populated after `mod git commit`.
 | `commitBranch` | string | Target branch | `main` |
 | `commitElapsedTimeMs` | integer | Duration (ms) | `99` |
 
-### Organization (column 74)
+### Publish Stage (columns 37–42 in `mod publish` traces)
+
+Populated after `mod publish`. These columns appear only in traces produced by `mod publish` — they are not part of the `mod git sync` → `mod git push` workflow chain. Because `mod publish` branches off after Build, publish columns slot in immediately after the Build stage and shift `organization` to column 43.
+
+| Column | Type | Description | Example |
+|--------|------|-------------|---------|
+| `publishOutcome` | string | Publish result | `Succeeded` |
+| `publishStartTime` | ISO 8601 | Publish start timestamp | `2026-04-10T15:30:00.000Z` |
+| `publishEndTime` | ISO 8601 | Publish end timestamp | `2026-04-10T15:30:04.512Z` |
+| `publishId` | string | Publish command identifier | `20260410103000-PbLsh` |
+| `publishUri` | string | Destination URI of the published LST artifact (empty when publish was skipped or failed before upload) | `https://artifacts.example.com/org/repo/1.0/repo-1.0.jar` |
+| `publishElapsedTimeMs` | integer | Duration (ms) | `4512` |
+
+`mod publish` aggregates per-repository traces into `.moderne/publish/<commandId>/trace.csv`. Per-partition trace directories are used during execution so concurrent publishes of multiple repositories do not overwrite each other before aggregation.
+
+### Organization (column 74 in main workflow traces; column 43 in `mod publish` traces)
 
 | Column | Type | Description | Example |
 |--------|------|-------------|---------|

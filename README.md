@@ -4,7 +4,7 @@ Starter templates for building reports and dashboards from Moderne CLI telemetry
 
 ## Data Source
 
-All templates work with the **trace.csv** produced by the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry). The trace format is hierarchical — each CLI command in the workflow (sync, build, run, apply, commit, push) produces a trace that includes data from all prior stages. See the [data dictionary](data-dictionary/trace-csv.md) for the full column reference.
+All templates work with the **trace.csv** produced by the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry). The trace format is hierarchical — each CLI command in the workflow (sync, build, run, apply, commit, push) produces a trace that includes data from all prior stages. `mod publish` produces its own trace branch (sync + build + publish) for LST artifact uploads. See the [data dictionary](data-dictionary/trace-csv.md) for the full column reference.
 
 ## Available Templates
 
