@@ -183,3 +183,21 @@ Populated after `mod publish`. These columns appear only in traces produced by `
 | `organization` | string | Moderne organization identifier | |
 
 **Note:** Push stage columns (`pushOutcome`, `pushStartTime`, `pushEndTime`, `pushId`, `pushElapsedTimeMs`) are present when `mod git push` is used. Traces from `mod exec` and `mod git checkout` are standalone and not part of the main workflow chain.
+
+## Trace tags
+
+Any command that emits a trace accepts the repeatable `--trace-tag key=value` option, which appends a `tag.<key>` column to the trace.csv with the supplied value. Tags let you attribute telemetry to a dimension the CLI does not otherwise capture — a change set, a team, a region, or a ticket id. The option is available on `mod run`, `mod build`, `mod exec`, `mod git apply/add/commit/push/checkout`, `mod publish`, and `mod git sync csv`.
+
+```bash
+mod run . --recipe org.openrewrite.java.OrderImports \
+    --trace-tag changeSetId=CS-2026-0142 \
+    --trace-tag team=payments
+```
+
+The example above adds `tag.changeSetId` and `tag.team` columns. The canonical tag is `changeSetId`: a change set is a higher-level container that can accumulate multiple runs in sequence (recipe run → apply → commit), so tagging each command with the same id lets a report attribute all of that committed output back to one change set. See the [Tagged Activity](../templates/tagged-activity/) template for an example.
+
+| Column | Type | Description | Example |
+|--------|------|-------------|---------|
+| `tag.<key>` | string | One column per tag supplied via `--trace-tag <key>=<value>` | `tag.changeSetId` = `CS-2026-0142` |
+
+**Querying note:** `tag.<key>` column names contain a dot, which is an identifier separator in SQL, so they must be quoted (`"tag.changeSetId"`) in AWS Athena, Trino, and PostgreSQL. Some loaders sanitize dots to underscores (`tag_changeSetId`); adjust the identifier to match how your table was created.

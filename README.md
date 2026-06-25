@@ -4,7 +4,7 @@ Starter templates for building reports and dashboards from Moderne CLI telemetry
 
 ## Data Source
 
-All templates work with the **trace.csv** produced by the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry). The trace format is hierarchical — each CLI command in the workflow (sync, build, run, apply, commit, push) produces a trace that includes data from all prior stages. `mod publish` produces its own trace branch (sync + build + publish) for LST artifact uploads. See the [data dictionary](data-dictionary/trace-csv.md) for the full column reference.
+All templates work with the **trace.csv** produced by the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry). The trace format is hierarchical — each CLI command in the workflow (sync, build, run, apply, commit, push) produces a trace that includes data from all prior stages. `mod publish` produces its own trace branch (sync + build + publish) for LST artifact uploads. Commands can also carry custom `--trace-tag key=value` columns for attribution (see [Trace tags](data-dictionary/trace-csv.md#trace-tags)). See the [data dictionary](data-dictionary/trace-csv.md) for the full column reference.
 
 ## Available Templates
 
@@ -22,6 +22,7 @@ Templates are sorted by [trace hierarchy](https://docs.moderne.io/user-documenta
 | [Top Users](templates/top-users/) | User engagement ranking by recipe runs and commits | `mod git commit` |
 | [Top Recipes with Commits](templates/top-recipes-with-commits/) | Recipes that produce real committed code changes | `mod git commit` |
 | [Security Recipe Run Trend](templates/security-recipe-run-trend/) | Monthly security remediation trend — committed fixes, repos fixed, and hours saved | `mod git commit` |
+| [Tagged Activity](templates/tagged-activity/) | Committed output attributed to a trace tag (e.g. change set, team, region) | `mod git commit` + `--trace-tag` |
 
 ## Getting Started
 
@@ -47,6 +48,7 @@ moderne-bi-templates/
 │   ├── dashboard-kpis-trend.csv
 │   ├── recipe-run-trend.csv
 │   ├── security-recipe-run-trend.csv
+│   ├── tagged-activity.csv
 │   ├── top-recipes.csv
 │   ├── top-recipes-with-commits.csv
 │   └── top-users.csv
@@ -58,6 +60,7 @@ moderne-bi-templates/
     ├── dashboard-kpis/
     ├── recipe-run-trend/
     ├── security-recipe-run-trend/
+    ├── tagged-activity/
     ├── top-recipes/
     ├── top-recipes-with-commits/
     └── top-users/                    # Each contains README, SQL, notebook, and images/
