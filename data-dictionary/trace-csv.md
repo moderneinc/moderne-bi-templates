@@ -2,8 +2,6 @@
 
 The Moderne CLI produces a `trace.csv` file that records telemetry for each CLI command. Traces are **hierarchical** — later commands in the workflow embed all data from earlier stages. For example, a `mod run` trace contains sync and build stage data in addition to run stage data.
 
-> **Column order:** Stages run oldest-first, except a standalone `mod run` trace, which is reversed (see [`mod run` Column Order](#mod-run-column-order)). Select by name, not position.
-
 Reference: [CLI Telemetry Documentation](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry)
 
 ## Trace Hierarchy
@@ -14,7 +12,7 @@ Each CLI command produces a trace that includes its own stage plus all prior sta
 |---------|-----------------|
 | `mod git sync` | Sync |
 | `mod build` | Sync + Build |
-| `mod run` | Run + Build + Sync *(reversed)* |
+| `mod run` | Sync + Build + Run |
 | `mod git apply` | Sync + Build + Run + Apply |
 | `mod git add` | Sync + Build + Run + Apply + Add |
 | `mod git commit` | Sync + Build + Run + Apply + Add + Commit |
@@ -25,17 +23,6 @@ Each CLI command produces a trace that includes its own stage plus all prior sta
 
 `mod publish` branches off after Build rather than continuing the Run → Apply → Commit → Push chain, so its traces contain Sync + Build + Publish columns and none of the Run/Apply/Add/Commit/Push columns.
 
-### `mod run` Column Order
-
-A standalone `mod run` trace is reversed — `Run → Build → Sync → organization`:
-
-| Position | Stage | Columns |
-|----------|-------|---------|
-| 1–4 | Common | `origin`, `path`, `branch`, `developer` |
-| 5–25 | Run | `runOutcome` … `runElapsedTimeMs` (21 columns) |
-| 26–50 | Build | `buildOutcome` … `buildElapsedTimeMs` (25 columns) |
-| 51–57 | Sync | `syncOutcome` … `syncElapsedTimeMs` (7 columns) |
-| 58 | Organization | `organization` |
 
 ## Column Reference
 
