@@ -17,9 +17,19 @@ SELECT
     SUM(runFilesWithFixResults)                                AS files_remediated,
     ROUND(SUM(runEstimatedEffortTimeSavingsMs) / 3600000.0, 1) AS estimated_hours_saved,
     COUNT(DISTINCT runRecipeId)                                AS distinct_recipes
-FROM trace
-WHERE commitOutcome = 'Succeeded'
-  AND (runRecipeId LIKE 'org.openrewrite.java.security.%'
-    OR runRecipeId LIKE 'org.openrewrite.staticanalysis.%')
+FROM (
+    SELECT
+        commitId,
+        MAX(commitStartTime)                 AS commitStartTime,
+        MAX(path)                            AS path,
+        MAX(runRecipeId)                     AS runRecipeId,
+        MAX(runFilesWithFixResults)          AS runFilesWithFixResults,
+        MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs
+    FROM trace
+    WHERE commitOutcome = 'Succeeded'
+      AND (runRecipeId LIKE 'org.openrewrite.java.security.%'
+        OR runRecipeId LIKE 'org.openrewrite.staticanalysis.%')
+    GROUP BY commitId
+) commits
 GROUP BY DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))
 ORDER BY month;

@@ -30,6 +30,7 @@ See [commit-activity.ipynb](commit-activity.ipynb) for a ready-to-run Jupyter no
 
 | Field | Stage | Purpose |
 |-------|-------|---------|
+| `commitId` | Commit | Deduplicate to one row per commit; avoids double-counting re-emitted stages |
 | `commitStartTime` | Commit | Time axis — grouped by month |
 | `commitOutcome` | Commit | Filter to successful commits |
 | `path` | Common | Count distinct for unique repos changed |

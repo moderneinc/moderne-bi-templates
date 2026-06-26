@@ -11,7 +11,15 @@ SELECT
     COUNT(*)                                                   AS successful_commits,
     COUNT(DISTINCT path)                                       AS unique_repos_changed,
     ROUND(SUM(runEstimatedEffortTimeSavingsMs) / 3600000.0, 1) AS estimated_hours_saved
-FROM trace
-WHERE commitOutcome = 'Succeeded'
+FROM (
+    SELECT
+        commitId,
+        MAX(commitStartTime)                 AS commitStartTime,
+        MAX(path)                            AS path,
+        MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs
+    FROM trace
+    WHERE commitOutcome = 'Succeeded'
+    GROUP BY commitId
+) commits
 GROUP BY DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))
 ORDER BY month;
