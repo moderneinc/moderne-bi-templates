@@ -32,7 +32,7 @@ See [security-recipe-run-trend.ipynb](security-recipe-run-trend.ipynb) for a rea
 
 | Field | Stage | Purpose |
 |-------|-------|---------|
-| `commitId` | Commit | Deduplicate to one row per commit, so re-emitted stages (e.g. `mod git push`) are not double-counted |
+| `commitId` | Commit | Deduplicate to one row per commit; avoids double-counting re-emitted stages |
 | `commitStartTime` | Commit | Time axis — grouped by month |
 | `commitOutcome` | Commit | Filter to successful commits |
 | `path` | Common | Count distinct for unique repos fixed |
