@@ -2,13 +2,14 @@
 --
 -- Monthly security remediation trend: committed fixes, repos fixed,
 -- files remediated, hours saved, and distinct security recipes over time.
--- Data source: mod git commit trace (commit-stage traces include run-stage data).
+-- Data source: mod git commit traces (type = 'commit'); they carry the run-stage columns.
 --
 -- Compatible with: AWS Athena, Trino, PostgreSQL, and other engines supporting DATE_TRUNC.
 -- Replace 'month' with 'week', 'quarter', or 'year' to change granularity.
 --
 -- Default filter targets recipes from rewrite-java-security and
 -- rewrite-static-analysis. See the README for customization guidance.
+-- Replace <your-tenant> with your tenant name.
 
 SELECT
     DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))    AS month,
@@ -25,8 +26,10 @@ FROM (
         MAX(runRecipeId)                     AS runRecipeId,
         MAX(runFilesWithFixResults)          AS runFilesWithFixResults,
         MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs
-    FROM trace
-    WHERE commitOutcome = 'Succeeded'
+    FROM traces
+    WHERE tenant = '<your-tenant>'
+      AND type = 'commit'
+      AND commitOutcome = 'Succeeded'
       AND (runRecipeId LIKE 'org.openrewrite.java.security.%'
         OR runRecipeId LIKE 'org.openrewrite.staticanalysis.%')
     GROUP BY commitId

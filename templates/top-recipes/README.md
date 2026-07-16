@@ -4,7 +4,7 @@ Most-used recipes ranked by run count and unique users — shows which recipes a
 
 ## Data Source
 
-This report uses trace data produced by **`mod run`**. Any later-stage command (`mod git apply`, `mod git commit`, `mod git push`) also includes run-stage data and will work with this query.
+This report uses trace data produced by **`mod run`**. Later-stage commands (`mod git apply`, `mod git add`, `mod git commit`) re-emit the same run-stage columns, so the query pins `type = 'run'` to count each run once.
 
 See the [trace.csv data dictionary](../../data-dictionary/trace-csv.md) for the full column reference.
 

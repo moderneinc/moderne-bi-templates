@@ -6,6 +6,7 @@
 -- Compatible with: AWS Athena, Trino, PostgreSQL, and other standard SQL engines.
 
 -- Query 1: Build tool summary — repos per build tool
+-- Replace <your-tenant> with your tenant name.
 SELECT
     CASE
         WHEN buildMavenVersion IS NOT NULL AND buildMavenVersion != '' THEN 'Maven'
@@ -18,8 +19,9 @@ SELECT
     END                      AS build_tool,
     COUNT(DISTINCT path)     AS repos,
     COUNT(DISTINCT buildId)  AS builds
-FROM trace
-WHERE buildOutcome = 'Succeeded'
+FROM traces
+WHERE tenant = '<your-tenant>'
+  AND buildOutcome = 'Succeeded'
 GROUP BY 1
 ORDER BY repos DESC;
 
@@ -45,7 +47,8 @@ SELECT
     )                        AS tool_version,
     COUNT(DISTINCT path)     AS repos,
     COUNT(DISTINCT buildId)  AS builds
-FROM trace
-WHERE buildOutcome = 'Succeeded'
+FROM traces
+WHERE tenant = '<your-tenant>'
+  AND buildOutcome = 'Succeeded'
 GROUP BY 1, 2
 ORDER BY build_tool, repos DESC;
