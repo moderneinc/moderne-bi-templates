@@ -5,7 +5,6 @@
 --
 -- Compatible with: AWS Athena, Trino, PostgreSQL, and other engines supporting DATE_TRUNC.
 -- Replace 'month' with 'week', 'quarter', or 'year' to change granularity.
--- Replace <your-tenant> with your tenant name.
 
 SELECT
     DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))                AS month,
@@ -17,8 +16,7 @@ SELECT
     COUNT(DISTINCT CASE WHEN commitOutcome = 'Succeeded' THEN commitId END) AS successful_commits,
     ROUND(SUM(runEstimatedEffortTimeSavingsMs) / 3600000.0, 1)             AS estimated_hours_saved
 FROM traces
-WHERE tenant = '<your-tenant>'
-  AND type = 'commit'
+WHERE type = 'commit'
   AND commitOutcome IS NOT NULL
 GROUP BY DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))
 ORDER BY month;

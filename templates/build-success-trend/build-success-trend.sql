@@ -5,7 +5,6 @@
 --
 -- Compatible with: AWS Athena, Trino, PostgreSQL, and other engines supporting DATE_TRUNC.
 -- Replace 'month' with 'week', 'quarter', or 'year' to change granularity.
--- Replace <your-tenant> with your tenant name.
 
 SELECT
     DATE_TRUNC('month', CAST(buildStartTime AS TIMESTAMP))                                      AS month,
@@ -16,7 +15,6 @@ SELECT
         / COUNT(DISTINCT buildId), 1)                                                           AS success_rate_pct,
     COUNT(DISTINCT path)                                                                        AS unique_repos
 FROM traces
-WHERE tenant = '<your-tenant>'
-  AND buildOutcome IS NOT NULL
+WHERE buildOutcome IS NOT NULL
 GROUP BY DATE_TRUNC('month', CAST(buildStartTime AS TIMESTAMP))
 ORDER BY month;

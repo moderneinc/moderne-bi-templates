@@ -12,7 +12,6 @@
 -- commit columns, which only later-stage traces carry.
 
 -- Query 1: Summary KPIs (single row, all-time totals)
--- Replace <your-tenant> with your tenant name.
 
 SELECT
     COUNT(DISTINCT runId)                                      AS total_recipe_runs,
@@ -31,8 +30,7 @@ FROM (
         MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs,
         MAX(CASE WHEN commitOutcome = 'Succeeded' THEN commitId END) AS committedCommitId
     FROM traces
-    WHERE tenant = '<your-tenant>'
-      AND runOutcome IS NOT NULL
+    WHERE runOutcome IS NOT NULL
     GROUP BY runId, path
 ) runs;
 
@@ -58,8 +56,7 @@ FROM (
         MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs,
         MAX(CASE WHEN commitOutcome = 'Succeeded' THEN commitId END) AS committedCommitId
     FROM traces
-    WHERE tenant = '<your-tenant>'
-      AND runOutcome IS NOT NULL
+    WHERE runOutcome IS NOT NULL
     GROUP BY runId, path
 ) runs
 GROUP BY DATE_TRUNC('month', CAST(runStartTime AS TIMESTAMP))

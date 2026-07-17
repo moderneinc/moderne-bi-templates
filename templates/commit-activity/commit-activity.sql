@@ -5,7 +5,6 @@
 --
 -- Compatible with: AWS Athena, Trino, PostgreSQL, and other engines supporting DATE_TRUNC.
 -- Replace 'month' with 'week', 'quarter', or 'year' to change granularity.
--- Replace <your-tenant> with your tenant name.
 
 SELECT
     DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))    AS month,
@@ -19,8 +18,7 @@ FROM (
         MAX(path)                            AS path,
         MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs
     FROM traces
-    WHERE tenant = '<your-tenant>'
-      AND type = 'commit'
+    WHERE type = 'commit'
       AND commitOutcome = 'Succeeded'
     GROUP BY commitId
 ) commits

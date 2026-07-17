@@ -4,7 +4,6 @@
 -- Data source: mod run traces (type = 'run').
 --
 -- Compatible with: AWS Athena, Trino, PostgreSQL, and other standard SQL engines.
--- Replace <your-tenant> with your tenant name.
 
 SELECT
     runRecipeId                AS recipe_id,
@@ -13,8 +12,7 @@ SELECT
     COUNT(DISTINCT developer)  AS unique_users,
     COUNT(DISTINCT path)       AS repos_searched
 FROM traces
-WHERE tenant = '<your-tenant>'
-  AND type = 'run'
+WHERE type = 'run'
   AND runOutcome IS NOT NULL
 GROUP BY runRecipeId
 ORDER BY recipe_runs DESC;

@@ -9,7 +9,6 @@
 --
 -- Default filter targets recipes from rewrite-java-security and
 -- rewrite-static-analysis. See the README for customization guidance.
--- Replace <your-tenant> with your tenant name.
 
 SELECT
     DATE_TRUNC('month', CAST(commitStartTime AS TIMESTAMP))    AS month,
@@ -27,8 +26,7 @@ FROM (
         MAX(runFilesWithFixResults)          AS runFilesWithFixResults,
         MAX(runEstimatedEffortTimeSavingsMs) AS runEstimatedEffortTimeSavingsMs
     FROM traces
-    WHERE tenant = '<your-tenant>'
-      AND type = 'commit'
+    WHERE type = 'commit'
       AND commitOutcome = 'Succeeded'
       AND (runRecipeId LIKE 'org.openrewrite.java.security.%'
         OR runRecipeId LIKE 'org.openrewrite.staticanalysis.%')
