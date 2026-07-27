@@ -1,66 +1,87 @@
 # Moderne BI Templates
 
-Starter templates for building reports and dashboards from Moderne CLI telemetry data. Each template includes a SQL query, Jupyter notebook visualization, sample data, and documentation — ready to import into your BI tool of choice (Power BI, Tableau, Looker, Grafana, AWS QuickSight, or any tool that supports SQL).
+Starter examples for turning Moderne CLI and platform telemetry into reports and dashboards. The repo is organized as three layers: **optimize the data for querying**, **query it**, and **visualize it**. These reflect the suggested approach, but adopt whichever pieces fit and adapt them where your stack or reporting needs differ.
 
-## Data Source
+## The layers
 
-All templates work with the **trace.csv** produced by the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry). The trace format is hierarchical — each CLI command in the workflow (sync, build, run, apply, commit, push) produces a trace that includes data from all prior stages. `mod publish` produces its own trace branch (sync + build + publish) for LST artifact uploads. See the [data dictionary](data-dictionary/trace-csv.md) for the full column reference.
+```
+raw trace CSV  ──►  data layer  ──►  `traces` table  ──►  queries  ──►  visualizations
+```
 
-## Available Templates
+The three layers map to the familiar medallion pattern — raw CSV (**bronze**) → the queryable `traces` table (**silver**) → reports and dashboards (**gold**).
 
-Templates are sorted by [trace hierarchy](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry#how-telemetry-is-generated) — earlier pipeline stages first, broadest applicability within each group second.
+| Layer | What it is | Where |
+|-------|------------|-------|
+| **Data layer** | Examples that take the raw trace CSV in your object storage and optimize it for querying, landing one wide `traces` table. | [`data-layer/`](data-layer/) |
+| **Queries** | One SQL report per folder, reading the wide `traces` table directly, plus its docs and a screenshot. | [`reports/`](reports/) |
+| **Visualizations** | The presentation layer, with one folder per BI tool as sibling ways to render the same queries. | [`dashboards/`](dashboards/) |
 
-| Template | Description | Minimum CLI Command |
-|----------|-------------|---------------------|
-| [Build Success Trend](templates/build-success-trend/) | Monthly build health — success vs. failure rates over time | `mod build` |
-| [Build Tool Distribution](templates/build-tool-distribution/) | Build tool and version distribution across successfully built repositories | `mod build` |
-| [Recipe Run Trend](templates/recipe-run-trend/) | Monthly adoption trend — recipe runs, distinct recipes, and unique users over time | `mod run` |
-| [Top Recipes](templates/top-recipes/) | Most-used recipes by run count, unique users, and repos searched | `mod run` |
-| [Dashboard KPIs](templates/dashboard-kpis/) | Executive-level snapshot — all-time totals and monthly trend | `mod git commit` |
-| [Commit Trend](templates/commit-trend/) | Monthly trend correlating recipe execution with committed code impact | `mod git commit` |
-| [Commit Activity](templates/commit-activity/) | Monthly committed output — successful commits, repos changed, and hours saved | `mod git commit` |
-| [Top Users](templates/top-users/) | User engagement ranking by recipe runs and commits | `mod git commit` |
-| [Top Recipes with Commits](templates/top-recipes-with-commits/) | Recipes that produce real committed code changes | `mod git commit` |
-| [Security Recipe Run Trend](templates/security-recipe-run-trend/) | Monthly security remediation trend — committed fixes, repos fixed, and hours saved | `mod git commit` |
+## The `traces` table
 
-## Getting Started
+Every query and visualization here expects the same logical table, however you produce it:
 
-1. Ensure your Moderne CLI is configured to publish trace data (see [CLI telemetry docs](https://docs.moderne.io/user-documentation/moderne-cli/how-to-guides/cli-telemetry))
-2. Choose a template from the table above
-3. Review the template's README for the report description, required fields, and example output
-4. Run the Jupyter notebook with sample data to preview the visualization, or copy the SQL query into your BI tool or query engine (Athena, Trino, BigQuery, etc.)
-5. Customize as needed for your organization
+- One wide table, **`traces`**, the union of every command stage's columns (see the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv)).
+- Partitioned by `tenant`, `source`, `type`, `year`, `month`, `day`.
+- Keyed by command **`type`** (`run`, `commit`, `build`, …); a row whose type lacks a stage reads those columns as `NULL`.
+- Columns are **typed** (timestamps, counts, durations, rates, booleans) — queries need no casts.
+- `tenant` is a partition column, but your export contains only your own tenant, so the reports don't filter on it.
 
-## Repository Structure
+The reports read `traces` **directly**. Each query carries its own command-`type` scoping (so stage re-emission can't inflate totals), which keeps every report self-contained — copy one file and run it. If you'd rather point a BI tool at a reusable, pre-scoped surface, you can optionally define convenience views in Athena or natively in your BI tool.
+
+Produce this table with the [data layer](data-layer/), which is the path we suggest, or produce it another way and adapt the queries to match. See the [telemetry export docs](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/configuring-telemetry-exports/overview) for the platform-side export configuration.
+
+## Available reports
+
+Sorted by the minimum CLI command that produces the data each report needs.
+
+| Report | Description | Minimum CLI command |
+|--------|-------------|---------------------|
+| [Build Success Trend](reports/build-success-trend/) | Monthly build health — success vs. failure rates over time | `mod build` |
+| [Build Tool Distribution](reports/build-tool-distribution/) | Build tool and version distribution across built repositories | `mod build` |
+| [Recipe Run Trend](reports/recipe-run-trend/) | Monthly adoption — recipe runs, distinct recipes, and unique users | `mod run` |
+| [Top Recipes](reports/top-recipes/) | Most-used recipes by run count, unique users, and repos searched | `mod run` |
+| [Dashboard KPIs](reports/dashboard-kpis/) | Executive snapshot — all-time totals and monthly trend | `mod git commit` |
+| [Commit Trend](reports/commit-trend/) | Monthly trend correlating recipe execution with committed code impact | `mod git commit` |
+| [Commit Activity](reports/commit-activity/) | Monthly committed output — successful commits, repos changed, hours saved | `mod git commit` |
+| [Top Users](reports/top-users/) | User engagement ranking by recipe runs and commits | `mod git commit` |
+| [Top Recipes with Commits](reports/top-recipes-with-commits/) | Recipes that produce real committed code changes | `mod git commit` |
+| [Security Recipe Run Trend](reports/security-recipe-run-trend/) | Monthly security remediation trend — committed fixes, repos, hours | `mod git commit` |
+
+## Getting started
+
+**Just want to see a chart?** Every notebook runs on bundled sample data — no cloud access needed:
+
+```bash
+pip install pandas matplotlib jupyter
+jupyter notebook            # open anything under dashboards/jupyter/
+```
+
+**Wiring up your own telemetry?**
+
+1. Configure telemetry export so trace CSV lands in a bucket you own — see the [telemetry export docs](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/configuring-telemetry-exports/overview).
+2. Stand up the `traces` table with the [data layer](data-layer/) (Athena walkthrough included).
+3. Pick a report under [`reports/`](reports/) and run it — the SQL is self-contained.
+4. Render it with a [notebook](dashboards/jupyter/), or wire it into the BI tool of your choice. See the [dashboards overview](dashboards/) for how each tool reads the same table.
+
+## Repository structure
 
 ```
 moderne-bi-templates/
-├── data-dictionary/
-│   └── trace-csv.md              # Full trace.csv column reference
-├── samples/                          # Sample CSV data for each template
-│   ├── build-success-trend.csv
-│   ├── build-tool-summary.csv
-│   ├── build-tool-versions.csv
-│   ├── commit-activity.csv
-│   ├── commit-trend.csv
-│   ├── dashboard-kpis-summary.csv
-│   ├── dashboard-kpis-trend.csv
-│   ├── recipe-run-trend.csv
-│   ├── security-recipe-run-trend.csv
-│   ├── top-recipes.csv
-│   ├── top-recipes-with-commits.csv
-│   └── top-users.csv
-└── templates/
-    ├── build-success-trend/
-    ├── build-tool-distribution/
-    ├── commit-activity/
-    ├── commit-trend/
-    ├── dashboard-kpis/
-    ├── recipe-run-trend/
-    ├── security-recipe-run-trend/
-    ├── top-recipes/
-    ├── top-recipes-with-commits/
-    └── top-users/                    # Each contains README, SQL, notebook, and images/
+├── data-layer/                   # optimize the raw CSV for querying
+│   ├── README.md                 # the `traces` contract, shared by every engine
+│   └── athena/
+│       ├── ddl/                  # CREATE DATABASE / per-type ingest tables / traces
+│       ├── compaction/           # daily CSV → Parquet job (example)
+│       └── views/                # optional convenience views (no report depends on them)
+├── reports/                    # one self-contained report per folder
+│   └── <report>/
+│       ├── <report>.sql          # the query
+│       ├── <report>-sample-data.csv  # example output (feeds the notebook + docs)
+│       ├── README.md
+│       └── images/               # chart screenshot
+└── dashboards/                   # the visualization layer (one folder per BI tool)
+    ├── jupyter/                  # one notebook per report (reads each report's sample CSV)
+    ├── quicksight/               # QuickSight analyses over `traces`
+    ├── tableau/                  # Tableau workbooks over `traces`
+    └── powerbi/                  # Power BI reports over `traces`
 ```
-
-Each template is a self-contained folder with a README, SQL query, Jupyter notebook visualization, and screenshot. Sample CSV data in the `samples/` directory lets you run any notebook immediately.
