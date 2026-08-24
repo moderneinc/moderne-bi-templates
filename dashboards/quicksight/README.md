@@ -19,7 +19,7 @@ The JSON is pretty-printed (2-space indent, original key order, trailing newline
 
 ## What the analysis shows
 
-Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report query from [`../../reports`](../../reports) with the schema qualified as `telemetry.traces` — see each report's folder for the query, its documentation, sample data, and a screenshot.
+Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report query from [`../../reports`](../../reports) with the schema qualified as `moderne_telemetry.traces` — see each report's folder for the query, its documentation, sample data, and a screenshot.
 
 | Sheet | Visuals | Dataset(s) | Report |
 |-------|---------|------------|--------|
@@ -34,7 +34,7 @@ Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report 
 | Top Recipes with Commits | bar "Top Recipes with Commits" | `Top Recipes with Commits` | [Top Recipes with Commits](../../reports/top-recipes-with-commits/) |
 | Top Users | bar "Top Users" | `Top Users` | [Top Users](../../reports/top-users/) |
 
-A thirteenth dataset, **`traces`**, is a direct relational table over `telemetry.traces` (all 98 columns). It is declared in the analysis but no visual uses it — it's there as a starting point for building your own sheets against the raw table.
+A thirteenth dataset, **`traces`**, is a direct relational table over `moderne_telemetry.traces` (all 98 columns). It is declared in the analysis but no visual uses it — it's there as a starting point for building your own sheets against the raw table.
 
 Other analysis-level details: NITRO theme, `LENIENT` validation, no parameters, no filter groups, and one calculated field — `Built Tool + Version` on the `Build Tool Versions` dataset, defined as `concat({Build Tool}, ' ', {Tool Version})`.
 
@@ -42,8 +42,8 @@ All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than q
 
 ## Prerequisites
 
-- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`.
-- A **schema** (the bundle assumes `telemetry`) containing the wide **`traces`** table. Stand it up with the [data layer](../../data-layer/), or produce the same table another way — the [`traces` contract](../../README.md#the-traces-table) is what matters.
+- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary — the repo sets no convention for it, so use whichever one you created in [step 3 of the Athena setup](../../data-layer/athena/README.md#3-create-an-athena-workgroup).
+- A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's DDL](../../data-layer/athena/ddl/01-create-database.sql) creates — so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
 - **QuickSight permission to create SPICE datasets**, plus enough SPICE capacity for 13 datasets. The importing principal needs `quicksight:StartAssetBundleImportJob` and create permissions on analyses, datasets, and data sources.
 
 The 12 custom-SQL datasets read 22 columns from `traces`:
@@ -62,13 +62,13 @@ From this directory, replace the account ID and region everywhere they appear (1
 grep -rl '<AWS_ACCOUNT_ID>\|<REGION>' analysis dataset datasource | xargs sed -i.bak -e 's/<AWS_ACCOUNT_ID>/123456789012/g' -e 's/<REGION>/us-east-1/g' && find . -name '*.bak' -delete
 ```
 
-If your Athena schema isn't `telemetry`, rewrite the 15 `telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
+The data layer's DDL names the database `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
 
 ```bash
-grep -rl 'telemetry' analysis dataset | xargs sed -i.bak -e 's/telemetry\.traces/my_schema.traces/g' -e 's/"schema": "telemetry"/"schema": "my_schema"/g' && find . -name '*.bak' -delete
+grep -rl moderne_telemetry dataset | xargs sed -i.bak -e 's/moderne_telemetry\.traces/my_schema.traces/g' -e 's/"schema": "moderne_telemetry"/"schema": "my_schema"/g' && find . -name '*.bak' -delete
 ```
 
-And if your workgroup isn't `telemetry`, edit `"workGroup"` in `datasource/0727c710-7910-4a77-bfce-a0ad18953eea.json` — or override it at import time (see below). Do these as a copy, not in place, if you want the repo's placeholders to stay intact.
+The workgroup is tracked separately from the schema, so it is deliberately left as plain `telemetry` and the command above will not touch it. If yours differs, edit `"workGroup"` in `datasource/0727c710-7910-4a77-bfce-a0ad18953eea.json` — or override it at import time (see below). Work on a copy, not in place, if you want the repo's placeholders to stay intact.
 
 ### 2. Zip and import
 

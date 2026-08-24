@@ -7,7 +7,7 @@
       "customSql": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "name": "Commit Activity",
-        "sqlQuery": "SELECT\n    date_trunc('month', commitstarttime)                AS month,\n    count(*)                                            AS successful_commits,\n    count(DISTINCT path)                                AS unique_repos_changed,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved\nFROM telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\nGROUP BY date_trunc('month', commitstarttime)\nORDER BY month",
+        "sqlQuery": "SELECT\n    date_trunc('month', commitstarttime)                AS month,\n    count(*)                                            AS successful_commits,\n    count(DISTINCT path)                                AS unique_repos_changed,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved\nFROM moderne_telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\nGROUP BY date_trunc('month', commitstarttime)\nORDER BY month",
         "columns": [
           {
             "name": "month",

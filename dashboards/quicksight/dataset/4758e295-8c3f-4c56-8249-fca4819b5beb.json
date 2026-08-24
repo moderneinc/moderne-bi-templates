@@ -7,7 +7,7 @@
       "customSql": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "name": "Recipe Run Trend",
-        "sqlQuery": "SELECT\n    date_trunc('month', runstarttime) AS month,\n    count(DISTINCT runid)             AS recipe_runs,\n    count(DISTINCT runrecipeid)       AS distinct_recipes,\n    count(DISTINCT developer)         AS unique_users\nFROM telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL\nGROUP BY date_trunc('month', runstarttime)\nORDER BY month",
+        "sqlQuery": "SELECT\n    date_trunc('month', runstarttime) AS month,\n    count(DISTINCT runid)             AS recipe_runs,\n    count(DISTINCT runrecipeid)       AS distinct_recipes,\n    count(DISTINCT developer)         AS unique_users\nFROM moderne_telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL\nGROUP BY date_trunc('month', runstarttime)\nORDER BY month",
         "columns": [
           {
             "name": "month",

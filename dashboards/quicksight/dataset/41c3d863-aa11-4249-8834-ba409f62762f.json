@@ -7,7 +7,7 @@
       "relationalTable": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "catalog": "AwsDataCatalog",
-        "schema": "telemetry",
+        "schema": "moderne_telemetry",
         "name": "traces",
         "inputColumns": [
           {

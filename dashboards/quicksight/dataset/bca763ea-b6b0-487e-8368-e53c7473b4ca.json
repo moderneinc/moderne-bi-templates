@@ -7,7 +7,7 @@
       "customSql": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "name": "Top Recipes",
-        "sqlQuery": "SELECT\n    runrecipeid                AS recipe_id,\n    max(runrecipeinstancename) AS recipe_name,\n    count(DISTINCT runid)      AS recipe_runs,\n    count(DISTINCT developer)  AS unique_users,\n    count(DISTINCT path)       AS repos_searched\nFROM telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL\n  AND runrecipeid <> ''\nGROUP BY runrecipeid\nORDER BY recipe_runs DESC",
+        "sqlQuery": "SELECT\n    runrecipeid                AS recipe_id,\n    max(runrecipeinstancename) AS recipe_name,\n    count(DISTINCT runid)      AS recipe_runs,\n    count(DISTINCT developer)  AS unique_users,\n    count(DISTINCT path)       AS repos_searched\nFROM moderne_telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL\n  AND runrecipeid <> ''\nGROUP BY runrecipeid\nORDER BY recipe_runs DESC",
         "columns": [
           {
             "name": "recipe_id",

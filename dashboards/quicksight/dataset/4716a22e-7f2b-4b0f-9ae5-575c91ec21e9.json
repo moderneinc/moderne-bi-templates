@@ -7,7 +7,7 @@
       "customSql": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "name": "Top Users",
-        "sqlQuery": "SELECT\n    coalesce(r.developer, c.developer) AS developer,\n    coalesce(r.recipe_runs, 0)         AS recipe_runs,\n    coalesce(c.commits, 0)             AS commits\nFROM (\n    SELECT developer, count(DISTINCT runid) AS recipe_runs\n    FROM telemetry.traces\n    WHERE type = 'run'\n      AND runstarttime IS NOT NULL\n      AND developer <> ''\n    GROUP BY developer\n) r\nFULL OUTER JOIN (\n    SELECT developer, count(DISTINCT commitid) AS commits\n    FROM telemetry.traces\n    WHERE type = 'commit'\n      AND commitstarttime IS NOT NULL\n      AND commitoutcome = 'Succeeded'\n      AND developer <> ''\n    GROUP BY developer\n) c ON r.developer = c.developer\nORDER BY recipe_runs DESC",
+        "sqlQuery": "SELECT\n    coalesce(r.developer, c.developer) AS developer,\n    coalesce(r.recipe_runs, 0)         AS recipe_runs,\n    coalesce(c.commits, 0)             AS commits\nFROM (\n    SELECT developer, count(DISTINCT runid) AS recipe_runs\n    FROM moderne_telemetry.traces\n    WHERE type = 'run'\n      AND runstarttime IS NOT NULL\n      AND developer <> ''\n    GROUP BY developer\n) r\nFULL OUTER JOIN (\n    SELECT developer, count(DISTINCT commitid) AS commits\n    FROM moderne_telemetry.traces\n    WHERE type = 'commit'\n      AND commitstarttime IS NOT NULL\n      AND commitoutcome = 'Succeeded'\n      AND developer <> ''\n    GROUP BY developer\n) c ON r.developer = c.developer\nORDER BY recipe_runs DESC",
         "columns": [
           {
             "name": "developer",

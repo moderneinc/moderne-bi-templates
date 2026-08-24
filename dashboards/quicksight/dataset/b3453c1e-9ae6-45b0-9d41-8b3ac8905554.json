@@ -7,7 +7,7 @@
       "customSql": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "name": "Dashboard KPIs Summary",
-        "sqlQuery": "SELECT\n    count(DISTINCT runid)                                        AS total_recipe_runs,\n    ( SELECT count(*)\n      FROM telemetry.traces\n      WHERE type = 'commit'\n        AND commitstarttime IS NOT NULL\n        AND commitoutcome = 'Succeeded' )                        AS total_commits,\n    count(DISTINCT developer)                                    AS unique_users,\n    count(DISTINCT runrecipeid)                                  AS unique_recipes,\n    sum(runfileswithfixresults)                                  AS files_changed,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1)   AS estimated_hours_saved\nFROM telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL",
+        "sqlQuery": "SELECT\n    count(DISTINCT runid)                                        AS total_recipe_runs,\n    ( SELECT count(*)\n      FROM moderne_telemetry.traces\n      WHERE type = 'commit'\n        AND commitstarttime IS NOT NULL\n        AND commitoutcome = 'Succeeded' )                        AS total_commits,\n    count(DISTINCT developer)                                    AS unique_users,\n    count(DISTINCT runrecipeid)                                  AS unique_recipes,\n    sum(runfileswithfixresults)                                  AS files_changed,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1)   AS estimated_hours_saved\nFROM moderne_telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL",
         "columns": [
           {
             "name": "total_recipe_runs",

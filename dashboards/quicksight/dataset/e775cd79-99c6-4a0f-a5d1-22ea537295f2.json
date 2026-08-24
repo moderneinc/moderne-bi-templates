@@ -7,7 +7,7 @@
       "customSql": {
         "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
         "name": "Top Recipes with Commits",
-        "sqlQuery": "SELECT\n    runrecipeid                                                AS recipe_id,\n    max(runrecipeinstancename)                                 AS recipe_name,\n    count(DISTINCT commitid)                                   AS commits,\n    count(DISTINCT developer)                                  AS unique_users,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved\nFROM telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\n  AND runrecipeid <> ''\nGROUP BY runrecipeid\nORDER BY commits DESC",
+        "sqlQuery": "SELECT\n    runrecipeid                                                AS recipe_id,\n    max(runrecipeinstancename)                                 AS recipe_name,\n    count(DISTINCT commitid)                                   AS commits,\n    count(DISTINCT developer)                                  AS unique_users,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved\nFROM moderne_telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\n  AND runrecipeid <> ''\nGROUP BY runrecipeid\nORDER BY commits DESC",
         "columns": [
           {
             "name": "recipe_id",
