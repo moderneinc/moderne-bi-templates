@@ -54,12 +54,19 @@ The `traces` table has 98 columns in total; the other 76 go unused by these data
 
 ## Importing
 
+Every command below reads two shell variables, named to match the placeholders in the JSON. Set them once:
+
+```bash
+export AWS_ACCOUNT_ID=123456789012   # your 12-digit QuickSight account ID
+export REGION=us-east-1              # the region your QuickSight account lives in
+```
+
 ### 1. Substitute the placeholders
 
 From this directory, replace the account ID and region everywhere they appear (14 files — all 13 datasets and the analysis):
 
 ```bash
-grep -rl '<AWS_ACCOUNT_ID>\|<REGION>' analysis dataset datasource | xargs sed -i.bak -e 's/<AWS_ACCOUNT_ID>/123456789012/g' -e 's/<REGION>/us-east-1/g' && find . -name '*.bak' -delete
+grep -rl '<AWS_ACCOUNT_ID>\|<REGION>' analysis dataset datasource | xargs sed -i.bak -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" -e "s/<REGION>/$REGION/g" && find . -name '*.bak' -delete
 ```
 
 The data layer's DDL names the database `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
@@ -80,8 +87,8 @@ zip -r ../../moderne-quicksight-bundle.zip analysis dataset datasource
 
 ```bash
 aws quicksight start-asset-bundle-import-job \
-  --region us-east-1 \
-  --aws-account-id 123456789012 \
+  --region "$REGION" \
+  --aws-account-id "$AWS_ACCOUNT_ID" \
   --asset-bundle-import-job-id moderne-bi-templates-import-1 \
   --asset-bundle-import-source-bytes fileb://../../moderne-quicksight-bundle.zip \
   --failure-action ROLLBACK
@@ -91,8 +98,8 @@ The call returns immediately with a `JobStatus` of `QUEUED_FOR_IMMEDIATE_EXECUTI
 
 ```bash
 aws quicksight describe-asset-bundle-import-job \
-  --region us-east-1 \
-  --aws-account-id 123456789012 \
+  --region "$REGION" \
+  --aws-account-id "$AWS_ACCOUNT_ID" \
   --asset-bundle-import-job-id moderne-bi-templates-import-1
 ```
 
@@ -122,14 +129,14 @@ That handles the **workgroup**, but not the two things most likely to block you:
 
 ## After import
 
-A successful import creates the assets but leaves them empty and private. Three things are worth doing, in order. Substitute your own account ID and region throughout.
+A successful import creates the assets but leaves them empty and private. Three things are worth doing, in order. These commands reuse the `$AWS_ACCOUNT_ID` and `$REGION` variables set [above](#importing).
 
 ### 1. Populate SPICE
 
 Every dataset imports empty — visuals stay blank until each one is ingested once. The dataset IDs are the filenames in `dataset/`, so the whole set can be kicked off in a loop:
 
 ```bash
-for f in dataset/*.json; do id=$(basename "$f" .json); aws quicksight create-ingestion --region us-east-1 --aws-account-id 123456789012 --data-set-id "$id" --ingestion-id "initial-load-$id" --ingestion-type FULL_REFRESH; done
+for f in dataset/*.json; do id=$(basename "$f" .json); aws quicksight create-ingestion --region "$REGION" --aws-account-id "$AWS_ACCOUNT_ID" --data-set-id "$id" --ingestion-id "initial-load-$id" --ingestion-type FULL_REFRESH; done
 ```
 
 Ingestion IDs must be unique per dataset, hence the suffix. Poll one with `describe-ingestion` if a dataset looks wrong — a query that fails against your schema surfaces there, not at import time.
@@ -140,8 +147,8 @@ This is the step the bundle intentionally leaves out: a schedule's `StartAfterDa
 
 ```bash
 aws quicksight create-refresh-schedule \
-  --region us-east-1 \
-  --aws-account-id 123456789012 \
+  --region "$REGION" \
+  --aws-account-id "$AWS_ACCOUNT_ID" \
   --data-set-id 4716a22e-7f2b-4b0f-9ae5-575c91ec21e9 \
   --schedule '{
     "ScheduleId": "daily-full-refresh",
@@ -162,11 +169,11 @@ The bundle ships no permissions, so the principal that ran the import is the sol
 
 ```bash
 aws quicksight update-analysis-permissions \
-  --region us-east-1 \
-  --aws-account-id 123456789012 \
+  --region "$REGION" \
+  --aws-account-id "$AWS_ACCOUNT_ID" \
   --analysis-id c47fe26c-0ba2-4888-80dd-d89557138865 \
   --grant-permissions \
-    Principal=arn:aws:quicksight:us-east-1:123456789012:group/default/analysts,Actions=quicksight:DescribeAnalysis,quicksight:QueryAnalysis,quicksight:DescribeAnalysisPermissions
+    Principal=arn:aws:quicksight:$REGION:$AWS_ACCOUNT_ID:group/default/analysts,Actions=quicksight:DescribeAnalysis,quicksight:QueryAnalysis,quicksight:DescribeAnalysisPermissions
 ```
 
 Datasets take the equivalent read set via `update-data-set-permissions` (`DescribeDataSet`, `DescribeDataSetPermissions`, `PassDataSet`, `DescribeIngestion`, `ListIngestions`), and the data source via `update-data-source-permissions` (`DescribeDataSource`, `DescribeDataSourcePermissions`, `PassDataSource`). See the [QuickSight permissions docs](https://docs.aws.amazon.com/quicksight/latest/developerguide/security_iam_service-with-iam.html) for the full action lists.
