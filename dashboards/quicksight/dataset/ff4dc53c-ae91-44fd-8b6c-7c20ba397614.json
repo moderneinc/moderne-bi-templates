@@ -1,0 +1,140 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "ff4dc53c-ae91-44fd-8b6c-7c20ba397614",
+  "name": "Commit Trend",
+  "physicalTableMap": {
+    "81fab197-c174-4bf3-9eb8-0919b4220f20": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Commit Trend",
+        "sqlQuery": "SELECT\n    date_trunc('month', commitstarttime)                                    AS month,\n    count(DISTINCT commitid)                                                AS commit_jobs,\n    count(DISTINCT runid)                                                   AS recipe_runs,\n    count(DISTINCT developer)                                               AS unique_users,\n    count(DISTINCT runrecipeid)                                             AS unique_recipes,\n    count(DISTINCT path)                                                    AS repos_with_commits,\n    count(DISTINCT CASE WHEN commitoutcome = 'Succeeded' THEN commitid END) AS successful_commits,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1)             AS estimated_hours_saved\nFROM telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\nGROUP BY date_trunc('month', commitstarttime)\nORDER BY month",
+        "columns": [
+          {
+            "name": "month",
+            "id": "new_custo-month-b1f35b",
+            "type": "DATETIME"
+          },
+          {
+            "name": "commit_jobs",
+            "id": "new_custo-commit_jo-ea7a9a",
+            "type": "INTEGER"
+          },
+          {
+            "name": "recipe_runs",
+            "id": "new_custo-recipe_ru-a45ebe",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_users",
+            "id": "new_custo-unique_us-d2590e",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_recipes",
+            "id": "new_custo-unique_re-e59554",
+            "type": "INTEGER"
+          },
+          {
+            "name": "repos_with_commits",
+            "id": "new_custo-repos_wit-8ef3f9",
+            "type": "INTEGER"
+          },
+          {
+            "name": "successful_commits",
+            "id": "new_custo-successfu-5ca757",
+            "type": "INTEGER"
+          },
+          {
+            "name": "estimated_hours_saved",
+            "id": "new_custo-estimated-181418",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "DISABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "cf421444-55c0-4049-b8e1-77a8331063df": {
+        "physicalTableId": "81fab197-c174-4bf3-9eb8-0919b4220f20"
+      }
+    },
+    "transformStepMap": {
+      "25e7a0b0-f381-4868-a7ba-d6e8dcd2b50d": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "96896bdb-a780-47f0-8a6f-a766737ce8fe"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "month",
+              "newColumnName": "Month"
+            },
+            {
+              "columnName": "estimated_hours_saved",
+              "newColumnName": "Est. Hours Saved"
+            },
+            {
+              "columnName": "commit_jobs",
+              "newColumnName": "Commit Jobs"
+            },
+            {
+              "columnName": "recipe_runs",
+              "newColumnName": "Recipe Runs"
+            },
+            {
+              "columnName": "unique_users",
+              "newColumnName": "Unique Users"
+            },
+            {
+              "columnName": "unique_recipes",
+              "newColumnName": "Unique Recipes"
+            },
+            {
+              "columnName": "repos_with_commits",
+              "newColumnName": "Repos with Commits"
+            },
+            {
+              "columnName": "successful_commits",
+              "newColumnName": "Successful Commits"
+            }
+          ]
+        }
+      },
+      "96896bdb-a780-47f0-8a6f-a766737ce8fe": {
+        "importTableStep": {
+          "alias": "Commit Trend",
+          "source": {
+            "sourceTableId": "cf421444-55c0-4049-b8e1-77a8331063df"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "896bd96e-2985-4a54-aa20-a2256a4eeef1": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "25e7a0b0-f381-4868-a7ba-d6e8dcd2b50d"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "efa2485a-4396-4879-a9f3-fce7de2ba1ba": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "896bd96e-2985-4a54-aa20-a2256a4eeef1"
+      }
+    }
+  }
+}

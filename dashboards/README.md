@@ -9,7 +9,7 @@ They all read the same source: the wide **`traces`** table the [data layer](../d
 | Tool | What it is | Where |
 |------|------------|-------|
 | **Jupyter** | One notebook per report, running on bundled sample CSVs. The quickest way to see a chart, with no cloud access needed. | [`jupyter/`](jupyter/) |
-| **QuickSight** | Amazon QuickSight analyses over `traces`. | [`quicksight/`](quicksight/) |
+| **QuickSight** | Amazon QuickSight analyses over `traces`, as an importable asset bundle: one analysis covering all ten reports, backed by SPICE datasets. | [`quicksight/`](quicksight/) |
 | **Tableau** | Tableau workbooks over `traces`. | [`tableau/`](tableau/) |
 | **Power BI** | Power BI reports over `traces`. | [`powerbi/`](powerbi/) |
 

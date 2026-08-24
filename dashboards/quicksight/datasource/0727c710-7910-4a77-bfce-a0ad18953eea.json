@@ -1,0 +1,14 @@
+{
+  "resourceType": "datasource",
+  "dataSourceId": "0727c710-7910-4a77-bfce-a0ad18953eea",
+  "name": "BI Telemetry",
+  "type": "ATHENA",
+  "dataSourceParameters": {
+    "athenaParameters": {
+      "workGroup": "telemetry"
+    }
+  },
+  "sslProperties": {
+    "disableSsl": false
+  }
+}

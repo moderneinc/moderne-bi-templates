@@ -1,0 +1,122 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "b3453c1e-9ae6-45b0-9d41-8b3ac8905554",
+  "name": "Dashboard KPIs Summary",
+  "physicalTableMap": {
+    "2b01847b-2e25-401f-92a6-ff24033933b7": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Dashboard KPIs Summary",
+        "sqlQuery": "SELECT\n    count(DISTINCT runid)                                        AS total_recipe_runs,\n    ( SELECT count(*)\n      FROM telemetry.traces\n      WHERE type = 'commit'\n        AND commitstarttime IS NOT NULL\n        AND commitoutcome = 'Succeeded' )                        AS total_commits,\n    count(DISTINCT developer)                                    AS unique_users,\n    count(DISTINCT runrecipeid)                                  AS unique_recipes,\n    sum(runfileswithfixresults)                                  AS files_changed,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1)   AS estimated_hours_saved\nFROM telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL",
+        "columns": [
+          {
+            "name": "total_recipe_runs",
+            "id": "new_custo-total_rec-8007c9",
+            "type": "INTEGER"
+          },
+          {
+            "name": "total_commits",
+            "id": "new_custo-total_com-0d6153",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_users",
+            "id": "new_custo-unique_us-859195",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_recipes",
+            "id": "new_custo-unique_re-6c5673",
+            "type": "INTEGER"
+          },
+          {
+            "name": "files_changed",
+            "id": "new_custo-files_cha-663dc1",
+            "type": "INTEGER"
+          },
+          {
+            "name": "estimated_hours_saved",
+            "id": "new_custo-estimated-af2065",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "0410d09d-4562-4169-bf69-9123e8d6e67b": {
+        "physicalTableId": "2b01847b-2e25-401f-92a6-ff24033933b7"
+      }
+    },
+    "transformStepMap": {
+      "526340b7-9ad2-4ccf-b36b-db5e0e975717": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "68f2073a-bfce-408c-b744-bef3505eac82"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "total_recipe_runs",
+              "newColumnName": "Total Recipe Runs"
+            },
+            {
+              "columnName": "total_commits",
+              "newColumnName": "Total Commits"
+            },
+            {
+              "columnName": "unique_users",
+              "newColumnName": "Unique Users"
+            },
+            {
+              "columnName": "unique_recipes",
+              "newColumnName": "Unique Recipes"
+            },
+            {
+              "columnName": "files_changed",
+              "newColumnName": "Files Changed"
+            },
+            {
+              "columnName": "estimated_hours_saved",
+              "newColumnName": "Estimated Hours Saved"
+            }
+          ]
+        }
+      },
+      "68f2073a-bfce-408c-b744-bef3505eac82": {
+        "importTableStep": {
+          "alias": "Dashboard KPIs Summary",
+          "source": {
+            "sourceTableId": "0410d09d-4562-4169-bf69-9123e8d6e67b"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "e53136ca-e187-4b7c-be81-b94e3da32559": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "526340b7-9ad2-4ccf-b36b-db5e0e975717"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "d39b3efa-5897-40df-a33f-cfe97cc5e173": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "e53136ca-e187-4b7c-be81-b94e3da32559"
+      }
+    }
+  }
+}

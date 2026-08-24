@@ -1,0 +1,122 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "b7bf602d-6353-48cf-8423-650d3f6e4401",
+  "name": "Security Recipe Run Trend",
+  "physicalTableMap": {
+    "72237ebe-cbc0-4166-954b-2c785baa1759": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Security Recipe Run Trend",
+        "sqlQuery": "SELECT\n    date_trunc('month', commitstarttime)                       AS month,\n    count(*)                                                   AS successful_commits,\n    count(DISTINCT path)                                       AS unique_repos_fixed,\n    sum(runfileswithfixresults)                                AS files_remediated,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved,\n    count(DISTINCT runrecipeid)                                AS distinct_recipes\nFROM telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\n  AND ( runrecipeid LIKE 'org.openrewrite.java.security.%'\n     OR runrecipeid LIKE 'org.openrewrite.staticanalysis.%' )\nGROUP BY date_trunc('month', commitstarttime)\nORDER BY month",
+        "columns": [
+          {
+            "name": "month",
+            "id": "new_custo-month-4e87fb",
+            "type": "DATETIME"
+          },
+          {
+            "name": "successful_commits",
+            "id": "new_custo-successfu-7b35b0",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_repos_fixed",
+            "id": "new_custo-unique_re-d5fd7e",
+            "type": "INTEGER"
+          },
+          {
+            "name": "files_remediated",
+            "id": "new_custo-files_rem-f4e867",
+            "type": "INTEGER"
+          },
+          {
+            "name": "estimated_hours_saved",
+            "id": "new_custo-estimated-1b6657",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          },
+          {
+            "name": "distinct_recipes",
+            "id": "new_custo-distinct_-e9e38b",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "1a4607d6-0865-4e97-9862-4555e87cb4dc": {
+        "physicalTableId": "72237ebe-cbc0-4166-954b-2c785baa1759"
+      }
+    },
+    "transformStepMap": {
+      "f9932ffc-5033-492e-8733-adb66f7ca04c": {
+        "importTableStep": {
+          "alias": "Security Recipe Run Trend",
+          "source": {
+            "sourceTableId": "1a4607d6-0865-4e97-9862-4555e87cb4dc"
+          }
+        }
+      },
+      "071949d4-bfc7-40f4-956b-03a2439965de": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "f9932ffc-5033-492e-8733-adb66f7ca04c"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "month",
+              "newColumnName": "Month"
+            },
+            {
+              "columnName": "successful_commits",
+              "newColumnName": "Successful Commits"
+            },
+            {
+              "columnName": "unique_repos_fixed",
+              "newColumnName": "Unique Repos Fixed"
+            },
+            {
+              "columnName": "files_remediated",
+              "newColumnName": "Files Remediated"
+            },
+            {
+              "columnName": "estimated_hours_saved",
+              "newColumnName": "Est. Hours Saved"
+            },
+            {
+              "columnName": "distinct_recipes",
+              "newColumnName": "Distinct Recipes"
+            }
+          ]
+        }
+      }
+    },
+    "destinationTableMap": {
+      "e2b326cd-bd02-48c4-8f2b-ed94427b1437": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "071949d4-bfc7-40f4-956b-03a2439965de"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "00bd4a5f-3fce-42f8-887f-d5610ef7da00": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "e2b326cd-bd02-48c4-8f2b-ed94427b1437"
+      }
+    }
+  }
+}

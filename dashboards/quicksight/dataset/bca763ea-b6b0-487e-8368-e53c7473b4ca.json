@@ -1,0 +1,112 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "bca763ea-b6b0-487e-8368-e53c7473b4ca",
+  "name": "Top Recipes",
+  "physicalTableMap": {
+    "d6f0fc8a-0aaa-45d8-88f6-317d97444790": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Top Recipes",
+        "sqlQuery": "SELECT\n    runrecipeid                AS recipe_id,\n    max(runrecipeinstancename) AS recipe_name,\n    count(DISTINCT runid)      AS recipe_runs,\n    count(DISTINCT developer)  AS unique_users,\n    count(DISTINCT path)       AS repos_searched\nFROM telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL\n  AND runrecipeid <> ''\nGROUP BY runrecipeid\nORDER BY recipe_runs DESC",
+        "columns": [
+          {
+            "name": "recipe_id",
+            "id": "new_custo-recipe_id-8746fb",
+            "type": "STRING"
+          },
+          {
+            "name": "recipe_name",
+            "id": "new_custo-recipe_na-f4a500",
+            "type": "STRING"
+          },
+          {
+            "name": "recipe_runs",
+            "id": "new_custo-recipe_ru-763ce1",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_users",
+            "id": "new_custo-unique_us-a2c414",
+            "type": "INTEGER"
+          },
+          {
+            "name": "repos_searched",
+            "id": "new_custo-repos_sea-8d24b6",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "DISABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "64d0d0a7-c05b-4347-a595-51b2ca0bd6d1": {
+        "physicalTableId": "d6f0fc8a-0aaa-45d8-88f6-317d97444790"
+      }
+    },
+    "transformStepMap": {
+      "1a411ab0-6c48-4f16-b77d-1b33e771db64": {
+        "importTableStep": {
+          "alias": "Top Recipes",
+          "source": {
+            "sourceTableId": "64d0d0a7-c05b-4347-a595-51b2ca0bd6d1"
+          }
+        }
+      },
+      "dc312787-93eb-4ab5-878c-8a10f7184052": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "1a411ab0-6c48-4f16-b77d-1b33e771db64"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "recipe_id",
+              "newColumnName": "Recipe ID"
+            },
+            {
+              "columnName": "recipe_name",
+              "newColumnName": "Recipe Name"
+            },
+            {
+              "columnName": "recipe_runs",
+              "newColumnName": "Recipe Runs"
+            },
+            {
+              "columnName": "unique_users",
+              "newColumnName": "Unique Users"
+            },
+            {
+              "columnName": "repos_searched",
+              "newColumnName": "Repos Searched"
+            }
+          ]
+        }
+      }
+    },
+    "destinationTableMap": {
+      "155cd7dd-bd6e-406f-ba78-26ee118a3052": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "dc312787-93eb-4ab5-878c-8a10f7184052"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "65497553-a513-44d9-b9f7-e7e6a7f6a12b": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "155cd7dd-bd6e-406f-ba78-26ee118a3052"
+      }
+    }
+  }
+}

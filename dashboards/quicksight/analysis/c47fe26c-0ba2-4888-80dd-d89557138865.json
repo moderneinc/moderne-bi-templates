@@ -1,0 +1,2481 @@
+{
+  "resourceType": "analysis",
+  "analysisId": "c47fe26c-0ba2-4888-80dd-d89557138865",
+  "name": "Moderne BI Templates",
+  "themeArn": "arn:aws:quicksight::aws:theme/NITRO",
+  "definition": {
+    "dataSetIdentifierDeclarations": [
+      {
+        "identifier": "Build Tool Versions",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/c2405002-f3bf-4104-82f0-974b21225e60"
+      },
+      {
+        "identifier": "Top Recipes with Commits",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/e775cd79-99c6-4a0f-a5d1-22ea537295f2"
+      },
+      {
+        "identifier": "Security Recipe Run Trend",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/b7bf602d-6353-48cf-8423-650d3f6e4401"
+      },
+      {
+        "identifier": "traces",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/41c3d863-aa11-4249-8834-ba409f62762f"
+      },
+      {
+        "identifier": "Top Recipes",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/bca763ea-b6b0-487e-8368-e53c7473b4ca"
+      },
+      {
+        "identifier": "Build Success Trend",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/691a5b0d-fe27-4989-8da6-6eb89349aa39"
+      },
+      {
+        "identifier": "Top Users",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/4716a22e-7f2b-4b0f-9ae5-575c91ec21e9"
+      },
+      {
+        "identifier": "Build Tool Distribution",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/0cbcac07-577e-4fec-b1fc-a952a6374790"
+      },
+      {
+        "identifier": "Commit Activity",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/f5bd74df-2f54-40f8-8a1c-5eeb484de55a"
+      },
+      {
+        "identifier": "Recipe Run Trend",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/4758e295-8c3f-4c56-8249-fca4819b5beb"
+      },
+      {
+        "identifier": "Commit Trend",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/ff4dc53c-ae91-44fd-8b6c-7c20ba397614"
+      },
+      {
+        "identifier": "Dashboard KPIs Summary",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/b3453c1e-9ae6-45b0-9d41-8b3ac8905554"
+      },
+      {
+        "identifier": "Dashboard KPIs Trend",
+        "dataSetArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:dataset/098b0981-684e-4cff-8d11-2ea12a31be99"
+      }
+    ],
+    "sheets": [
+      {
+        "sheetId": "0d2ba561-e14a-4473-b955-84edfab2b60f",
+        "name": "Build Success Trend",
+        "visuals": [
+          {
+            "comboChartVisual": {
+              "visualId": "9bda1504-bd31-4e6b-8533-5da4098b30e3",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Build Success Trend</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "comboChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "dateDimensionField": {
+                          "fieldId": "new_custo-month-bd6c69.0.1786031392811",
+                          "column": {
+                            "dataSetIdentifier": "Build Success Trend",
+                            "columnName": "Month"
+                          },
+                          "dateGranularity": "MONTH",
+                          "hierarchyId": "new_custo-month-bd6c69.0.1786031392811"
+                        }
+                      }
+                    ],
+                    "barValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-successfu-0ad985.2.1786031398940",
+                          "column": {
+                            "dataSetIdentifier": "Build Success Trend",
+                            "columnName": "Successful Builds"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-failed_bu-f6dd51.3.1786032395419",
+                          "column": {
+                            "dataSetIdentifier": "Build Success Trend",
+                            "columnName": "Failed Builds"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": [],
+                    "lineValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-success_r-624105.3.1786031742274",
+                          "column": {
+                            "dataSetIdentifier": "Build Success Trend",
+                            "columnName": "Success Rate %"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-month-bd6c69.0.1786031392811",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "barsArrangement": "STACKED",
+                "categoryLabelOptions": {
+                  "axisLabelOptions": [
+                    {
+                      "customLabel": "Month",
+                      "applyTo": {
+                        "fieldId": "new_custo-month-bd6c69.0.1786031392811",
+                        "column": {
+                          "dataSetIdentifier": "Build Success Trend",
+                          "columnName": "Month"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "secondaryYAxisLabelOptions": {
+                  "axisLabelOptions": [
+                    {
+                      "customLabel": "Success Rate %",
+                      "applyTo": {
+                        "fieldId": "new_custo-success_r-624105.3.1786031742274",
+                        "column": {
+                          "dataSetIdentifier": "Build Success Trend",
+                          "columnName": "Success Rate %"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "legend": {
+                  "title": {
+                    "customLabel": "Legend"
+                  },
+                  "width": "141px"
+                },
+                "barDataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "lineDataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-month-bd6c69.0.1786031392811",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BOTH"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-successfu-0ad985.2.1786031398940",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-success_r-624105.3.1786031742274",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-failed_bu-f6dd51.3.1786032395419",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": [
+                {
+                  "dateTimeHierarchy": {
+                    "hierarchyId": "new_custo-month-bd6c69.0.1786031392811"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "9bda1504-bd31-4e6b-8533-5da4098b30e3",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 26,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "07ebef69-d39a-4061-9173-96a0c7b11bd7",
+        "name": "Build Tool Distribution",
+        "visuals": [
+          {
+            "barChartVisual": {
+              "visualId": "cc02655c-d560-4343-86c9-48fa4854fc20",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Build Tool Versions (by Repos)</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "barChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "categoricalDimensionField": {
+                          "fieldId": "ac052e29-f761-4a63-a9ed-91b3d19a5aff.1.1786053927635",
+                          "column": {
+                            "dataSetIdentifier": "Build Tool Versions",
+                            "columnName": "Built Tool + Version"
+                          }
+                        }
+                      }
+                    ],
+                    "values": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-repos-b26145.0.1786033588736",
+                          "column": {
+                            "dataSetIdentifier": "Build Tool Versions",
+                            "columnName": "Repos"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": [
+                      {
+                        "categoricalDimensionField": {
+                          "fieldId": "new_custo-build_too-74d06b.2.1786053932234",
+                          "column": {
+                            "dataSetIdentifier": "Build Tool Versions",
+                            "columnName": "Build Tool"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-repos-b26145.0.1786033588736",
+                        "direction": "DESC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "itemsLimit": 20,
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "smallMultiplesLimitConfiguration": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "orientation": "HORIZONTAL",
+                "barsArrangement": "CLUSTERED",
+                "categoryAxis": {
+                  "tickLabelOptions": {
+                    "labelOptions": {
+                      "visibility": "VISIBLE"
+                    }
+                  }
+                },
+                "categoryLabelOptions": {
+                  "sortIconVisibility": "VISIBLE"
+                },
+                "valueLabelOptions": {
+                  "visibility": "VISIBLE",
+                  "sortIconVisibility": "HIDDEN"
+                },
+                "dataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-repos-b26145.0.1786033588736",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "ac052e29-f761-4a63-a9ed-91b3d19a5aff.1.1786053927635",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-build_too-74d06b.2.1786053932234",
+                          "visibility": "VISIBLE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "pieChartVisual": {
+              "visualId": "02831cf3-a9ba-4df8-a419-f10243c7e670",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Build Tool Distribution (by Repos)</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "pieChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "categoricalDimensionField": {
+                          "fieldId": "new_custo-build_too-38749e.0.1786053168024",
+                          "column": {
+                            "dataSetIdentifier": "Build Tool Distribution",
+                            "columnName": "Build Tool"
+                          }
+                        }
+                      }
+                    ],
+                    "values": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-repos-dc6499.1.1786053169840",
+                          "column": {
+                            "dataSetIdentifier": "Build Tool Distribution",
+                            "columnName": "Repos"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-repos-dc6499.1.1786053169840",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "smallMultiplesLimitConfiguration": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "donutOptions": {
+                  "arcOptions": {
+                    "arcThickness": "MEDIUM"
+                  }
+                },
+                "categoryLabelOptions": {
+                  "visibility": "HIDDEN"
+                },
+                "valueLabelOptions": {
+                  "visibility": "HIDDEN",
+                  "sortIconVisibility": "HIDDEN"
+                },
+                "dataLabels": {
+                  "visibility": "VISIBLE",
+                  "measureLabelVisibility": "VISIBLE",
+                  "position": "OUTSIDE",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-build_too-38749e.0.1786053168024",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-repos-dc6499.1.1786053169840",
+                          "visibility": "VISIBLE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "02831cf3-a9ba-4df8-a419-f10243c7e670",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 18,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  },
+                  {
+                    "elementId": "cc02655c-d560-4343-86c9-48fa4854fc20",
+                    "elementType": "VISUAL",
+                    "columnIndex": 18,
+                    "columnSpan": 18,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "617d5023-a845-46c2-8d6c-2a046ec11068",
+        "name": "Commit Activity",
+        "visuals": [
+          {
+            "comboChartVisual": {
+              "visualId": "2b569687-1edf-44db-bc82-109792afab5a",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Commit Activity</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "comboChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "dateDimensionField": {
+                          "fieldId": "new_custo-month-846782.2.1787605637027",
+                          "column": {
+                            "dataSetIdentifier": "Commit Activity",
+                            "columnName": "Month"
+                          },
+                          "hierarchyId": "new_custo-month-846782.2.1787605637027"
+                        }
+                      }
+                    ],
+                    "barValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-successfu-1d58da.0.1787605604040",
+                          "column": {
+                            "dataSetIdentifier": "Commit Activity",
+                            "columnName": "Successful Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_re-28606a.1.1787605628279",
+                          "column": {
+                            "dataSetIdentifier": "Commit Activity",
+                            "columnName": "Unique Repos Changed"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": [],
+                    "lineValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-estimated-ac4613.3.1787605650760",
+                          "column": {
+                            "dataSetIdentifier": "Commit Activity",
+                            "columnName": "Est. Hours Saved"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-month-846782.2.1787605637027",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "barsArrangement": "CLUSTERED",
+                "secondaryYAxisDisplayOptions": {
+                  "axisLineVisibility": "HIDDEN"
+                },
+                "defaultSeriesSettings": {
+                  "markerStyleSettings": {
+                    "markerVisibility": "VISIBLE",
+                    "markerShape": "DIAMOND",
+                    "markerSize": "12px",
+                    "markerColor": "#863CFF"
+                  }
+                },
+                "series": [
+                  {
+                    "fieldComboSeriesItem": {
+                      "fieldId": "new_custo-unique_re-28606a.1.1787605628279",
+                      "settings": {
+                        "markerStyleSettings": {
+                          "markerVisibility": "VISIBLE",
+                          "markerShape": "DIAMOND",
+                          "markerSize": "12px",
+                          "markerColor": "#863CFF"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "legend": {
+                  "width": "172px"
+                },
+                "barDataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-successfu-1d58da.0.1787605604040",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_re-28606a.1.1787605628279",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-month-846782.2.1787605637027",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BOTH"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-estimated-ac4613.3.1787605650760",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "visualPalette": {
+                  "chartColor": "#0251D3",
+                  "colorMap": [
+                    {
+                      "element": {
+                        "fieldId": "new_custo-unique_re-28606a.1.1787605628279",
+                        "fieldValue": "Unique Repos Changed"
+                      },
+                      "color": "#A8577B"
+                    }
+                  ]
+                }
+              },
+              "actions": [],
+              "columnHierarchies": [
+                {
+                  "dateTimeHierarchy": {
+                    "hierarchyId": "new_custo-month-846782.2.1787605637027"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "2b569687-1edf-44db-bc82-109792afab5a",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 19,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "20e067e4-0f74-4932-9752-ca82661ef1df",
+        "name": "Commit Trend",
+        "visuals": [
+          {
+            "comboChartVisual": {
+              "visualId": "53ccc30b-6ad7-466a-a72a-e532401da110",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Commit Trend</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "comboChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "dateDimensionField": {
+                          "fieldId": "new_custo-month-b1f35b.0.1787607327903",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Month"
+                          },
+                          "hierarchyId": "new_custo-month-b1f35b.0.1787607327903"
+                        }
+                      }
+                    ],
+                    "barValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-recipe_ru-a45ebe.3.1787607340429",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Recipe Runs"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-successfu-5ca757.4.1787607342915",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Successful Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-repos_wit-8ef3f9.5.1787607344263",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Repos with Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": [],
+                    "lineValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_us-d2590e.1.1787607332461",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Unique Users"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_re-e59554.2.1787607336466",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Unique Recipes"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-estimated-181418.6.1787607350296",
+                          "column": {
+                            "dataSetIdentifier": "Commit Trend",
+                            "columnName": "Est. Hours Saved"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-month-b1f35b.0.1787607327903",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "barsArrangement": "CLUSTERED",
+                "defaultSeriesSettings": {
+                  "markerStyleSettings": {
+                    "markerVisibility": "VISIBLE",
+                    "markerShape": "DIAMOND",
+                    "markerSize": "12px"
+                  }
+                },
+                "legend": {
+                  "width": "199px"
+                },
+                "barDataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-month-b1f35b.0.1787607327903",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BOTH"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_us-d2590e.1.1787607332461",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_re-e59554.2.1787607336466",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_ru-a45ebe.3.1787607340429",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-successfu-5ca757.4.1787607342915",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-repos_wit-8ef3f9.5.1787607344263",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-estimated-181418.6.1787607350296",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": [
+                {
+                  "dateTimeHierarchy": {
+                    "hierarchyId": "new_custo-month-b1f35b.0.1787607327903"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "53ccc30b-6ad7-466a-a72a-e532401da110",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 29,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "9795dfd1-6c80-419f-a63e-e2fbc9898354",
+        "name": "Dashboard KPIs",
+        "visuals": [
+          {
+            "kpivisual": {
+              "visualId": "89ac6933-6567-4a92-8662-8e55bb39fd9d",
+              "title": {
+                "visibility": "VISIBLE"
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "values": [
+                    {
+                      "numericalMeasureField": {
+                        "fieldId": "new_custo-total_rec-8007c9.0.1786054915125",
+                        "column": {
+                          "dataSetIdentifier": "Dashboard KPIs Summary",
+                          "columnName": "Total Recipe Runs"
+                        },
+                        "aggregationFunction": {
+                          "simpleNumericalAggregation": "SUM"
+                        }
+                      }
+                    }
+                  ],
+                  "targetValues": [],
+                  "trendGroups": []
+                },
+                "sortConfiguration": {},
+                "kpioptions": {
+                  "comparison": {
+                    "comparisonMethod": "PERCENT_DIFFERENCE"
+                  },
+                  "primaryValueDisplayType": "ACTUAL",
+                  "secondaryValueFontConfiguration": {
+                    "fontSize": {
+                      "relative": "EXTRA_LARGE"
+                    }
+                  },
+                  "sparkline": {
+                    "visibility": "VISIBLE",
+                    "type": "AREA"
+                  },
+                  "visualLayoutOptions": {
+                    "standardLayout": {
+                      "type": "VERTICAL"
+                    }
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "kpivisual": {
+              "visualId": "a2e9027e-3595-4675-aebd-363200bf95ef",
+              "title": {
+                "visibility": "VISIBLE"
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "values": [
+                    {
+                      "numericalMeasureField": {
+                        "fieldId": "new_custo-total_com-0d6153.0.1786054937536",
+                        "column": {
+                          "dataSetIdentifier": "Dashboard KPIs Summary",
+                          "columnName": "Total Commits"
+                        },
+                        "aggregationFunction": {
+                          "simpleNumericalAggregation": "SUM"
+                        }
+                      }
+                    }
+                  ],
+                  "targetValues": [],
+                  "trendGroups": []
+                },
+                "sortConfiguration": {},
+                "kpioptions": {
+                  "comparison": {
+                    "comparisonMethod": "PERCENT_DIFFERENCE"
+                  },
+                  "primaryValueDisplayType": "ACTUAL",
+                  "secondaryValueFontConfiguration": {
+                    "fontSize": {
+                      "relative": "EXTRA_LARGE"
+                    }
+                  },
+                  "sparkline": {
+                    "visibility": "VISIBLE",
+                    "type": "AREA"
+                  },
+                  "visualLayoutOptions": {
+                    "standardLayout": {
+                      "type": "VERTICAL"
+                    }
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "kpivisual": {
+              "visualId": "fffe1667-e4bd-495f-ad50-f996f012bb8b",
+              "title": {
+                "visibility": "VISIBLE"
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "values": [
+                    {
+                      "numericalMeasureField": {
+                        "fieldId": "new_custo-unique_us-859195.0.1786055039730",
+                        "column": {
+                          "dataSetIdentifier": "Dashboard KPIs Summary",
+                          "columnName": "Unique Users"
+                        },
+                        "aggregationFunction": {
+                          "simpleNumericalAggregation": "SUM"
+                        }
+                      }
+                    }
+                  ],
+                  "targetValues": [],
+                  "trendGroups": []
+                },
+                "sortConfiguration": {},
+                "kpioptions": {
+                  "comparison": {
+                    "comparisonMethod": "PERCENT_DIFFERENCE"
+                  },
+                  "primaryValueDisplayType": "ACTUAL",
+                  "secondaryValueFontConfiguration": {
+                    "fontSize": {
+                      "relative": "EXTRA_LARGE"
+                    }
+                  },
+                  "sparkline": {
+                    "visibility": "VISIBLE",
+                    "type": "AREA"
+                  },
+                  "visualLayoutOptions": {
+                    "standardLayout": {
+                      "type": "VERTICAL"
+                    }
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "kpivisual": {
+              "visualId": "8b0414e8-7c65-4f82-b12f-593123b32a38",
+              "title": {
+                "visibility": "VISIBLE"
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "values": [
+                    {
+                      "numericalMeasureField": {
+                        "fieldId": "new_custo-unique_re-6c5673.0.1786055052081",
+                        "column": {
+                          "dataSetIdentifier": "Dashboard KPIs Summary",
+                          "columnName": "Unique Recipes"
+                        },
+                        "aggregationFunction": {
+                          "simpleNumericalAggregation": "SUM"
+                        }
+                      }
+                    }
+                  ],
+                  "targetValues": [],
+                  "trendGroups": []
+                },
+                "sortConfiguration": {},
+                "kpioptions": {
+                  "comparison": {
+                    "comparisonMethod": "PERCENT_DIFFERENCE"
+                  },
+                  "primaryValueDisplayType": "ACTUAL",
+                  "secondaryValueFontConfiguration": {
+                    "fontSize": {
+                      "relative": "EXTRA_LARGE"
+                    }
+                  },
+                  "sparkline": {
+                    "visibility": "VISIBLE",
+                    "type": "AREA"
+                  },
+                  "visualLayoutOptions": {
+                    "standardLayout": {
+                      "type": "VERTICAL"
+                    }
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "kpivisual": {
+              "visualId": "f9c0307d-d260-4236-868d-7c6fe90f9fe5",
+              "title": {
+                "visibility": "VISIBLE"
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "values": [
+                    {
+                      "numericalMeasureField": {
+                        "fieldId": "new_custo-files_cha-663dc1.0.1786055080955",
+                        "column": {
+                          "dataSetIdentifier": "Dashboard KPIs Summary",
+                          "columnName": "Files Changed"
+                        },
+                        "aggregationFunction": {
+                          "simpleNumericalAggregation": "SUM"
+                        }
+                      }
+                    }
+                  ],
+                  "targetValues": [],
+                  "trendGroups": []
+                },
+                "sortConfiguration": {},
+                "kpioptions": {
+                  "comparison": {
+                    "comparisonMethod": "PERCENT_DIFFERENCE"
+                  },
+                  "primaryValueDisplayType": "ACTUAL",
+                  "secondaryValueFontConfiguration": {
+                    "fontSize": {
+                      "relative": "EXTRA_LARGE"
+                    }
+                  },
+                  "sparkline": {
+                    "visibility": "VISIBLE",
+                    "type": "AREA"
+                  },
+                  "visualLayoutOptions": {
+                    "standardLayout": {
+                      "type": "VERTICAL"
+                    }
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "kpivisual": {
+              "visualId": "c37cf0e0-e5b5-4edb-a8af-8fbd28719a07",
+              "title": {
+                "visibility": "VISIBLE"
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "values": [
+                    {
+                      "numericalMeasureField": {
+                        "fieldId": "new_custo-estimated-af2065.0.1786055114629",
+                        "column": {
+                          "dataSetIdentifier": "Dashboard KPIs Summary",
+                          "columnName": "Estimated Hours Saved"
+                        },
+                        "aggregationFunction": {
+                          "simpleNumericalAggregation": "SUM"
+                        }
+                      }
+                    }
+                  ],
+                  "targetValues": [],
+                  "trendGroups": []
+                },
+                "sortConfiguration": {},
+                "kpioptions": {
+                  "comparison": {
+                    "comparisonMethod": "PERCENT_DIFFERENCE"
+                  },
+                  "primaryValueDisplayType": "ACTUAL",
+                  "secondaryValueFontConfiguration": {
+                    "fontSize": {
+                      "relative": "EXTRA_LARGE"
+                    }
+                  },
+                  "sparkline": {
+                    "visibility": "VISIBLE",
+                    "type": "AREA"
+                  },
+                  "visualLayoutOptions": {
+                    "standardLayout": {
+                      "type": "VERTICAL"
+                    }
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          },
+          {
+            "comboChartVisual": {
+              "visualId": "e28db51f-1ba2-4ccf-9ac6-0b12c5e0671b",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Monthly Trend</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "comboChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "dateDimensionField": {
+                          "fieldId": "new_custo-month-8eaadb.0.1786055221626",
+                          "column": {
+                            "dataSetIdentifier": "Dashboard KPIs Trend",
+                            "columnName": "Month"
+                          },
+                          "hierarchyId": "new_custo-month-8eaadb.0.1786055221626"
+                        }
+                      }
+                    ],
+                    "barValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-recipe_ru-493099.1.1786055228963",
+                          "column": {
+                            "dataSetIdentifier": "Dashboard KPIs Trend",
+                            "columnName": "Recipe Runs"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-commits-5dcbd8.2.1786055230763",
+                          "column": {
+                            "dataSetIdentifier": "Dashboard KPIs Trend",
+                            "columnName": "Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": [],
+                    "lineValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-estimated-7632ae.3.1786055237442",
+                          "column": {
+                            "dataSetIdentifier": "Dashboard KPIs Trend",
+                            "columnName": "Est. Hours Saved"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-month-8eaadb.0.1786055221626",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "barsArrangement": "CLUSTERED",
+                "secondaryYAxisDisplayOptions": {
+                  "axisOffset": "78px"
+                },
+                "legend": {
+                  "width": "174px"
+                },
+                "barDataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-month-8eaadb.0.1786055221626",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BOTH"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_ru-493099.1.1786055228963",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-commits-5dcbd8.2.1786055230763",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-estimated-7632ae.3.1786055237442",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": [
+                {
+                  "dateTimeHierarchy": {
+                    "hierarchyId": "new_custo-month-8eaadb.0.1786055221626"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "textBoxes": [
+          {
+            "sheetTextBoxId": "1a85697c-19f2-494c-beed-f1ec729a5351",
+            "content": "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"24px\">\n      <b>Dashboard KPIs</b>\n    </inline>\n  </block>\n</text-box>"
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "1a85697c-19f2-494c-beed-f1ec729a5351",
+                    "elementType": "TEXT_BOX",
+                    "columnIndex": 0,
+                    "columnSpan": 25,
+                    "rowIndex": 0,
+                    "rowSpan": 2
+                  },
+                  {
+                    "elementId": "89ac6933-6567-4a92-8662-8e55bb39fd9d",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 7,
+                    "rowIndex": 2,
+                    "rowSpan": 5
+                  },
+                  {
+                    "elementId": "a2e9027e-3595-4675-aebd-363200bf95ef",
+                    "elementType": "VISUAL",
+                    "columnIndex": 7,
+                    "columnSpan": 6,
+                    "rowIndex": 2,
+                    "rowSpan": 5
+                  },
+                  {
+                    "elementId": "fffe1667-e4bd-495f-ad50-f996f012bb8b",
+                    "elementType": "VISUAL",
+                    "columnIndex": 13,
+                    "columnSpan": 6,
+                    "rowIndex": 2,
+                    "rowSpan": 5
+                  },
+                  {
+                    "elementId": "8b0414e8-7c65-4f82-b12f-593123b32a38",
+                    "elementType": "VISUAL",
+                    "columnIndex": 19,
+                    "columnSpan": 6,
+                    "rowIndex": 2,
+                    "rowSpan": 5
+                  },
+                  {
+                    "elementId": "f9c0307d-d260-4236-868d-7c6fe90f9fe5",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 13,
+                    "rowIndex": 7,
+                    "rowSpan": 5
+                  },
+                  {
+                    "elementId": "c37cf0e0-e5b5-4edb-a8af-8fbd28719a07",
+                    "elementType": "VISUAL",
+                    "columnIndex": 13,
+                    "columnSpan": 12,
+                    "rowIndex": 7,
+                    "rowSpan": 5
+                  },
+                  {
+                    "elementId": "e28db51f-1ba2-4ccf-9ac6-0b12c5e0671b",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 25,
+                    "rowIndex": 12,
+                    "rowSpan": 13
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "85b8fd6b-705d-46be-8f3c-6bb5bc90e855",
+        "name": "Recipe Run Trends",
+        "visuals": [
+          {
+            "barChartVisual": {
+              "visualId": "2e92b3a3-5bda-42ab-a1e1-c76d2102a7d7",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Recipe Run Trend</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "barChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "dateDimensionField": {
+                          "fieldId": "new_custo-month-6fa01c.0.1786056075309",
+                          "column": {
+                            "dataSetIdentifier": "Recipe Run Trend",
+                            "columnName": "Month"
+                          },
+                          "hierarchyId": "new_custo-month-6fa01c.0.1786056075309"
+                        }
+                      }
+                    ],
+                    "values": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-recipe_ru-41dd42.1.1786056081399",
+                          "column": {
+                            "dataSetIdentifier": "Recipe Run Trend",
+                            "columnName": "Recipe Runs"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-distinct_-2d9ed5.2.1786056081975",
+                          "column": {
+                            "dataSetIdentifier": "Recipe Run Trend",
+                            "columnName": "Distinct Recipes"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_us-a91912.3.1786056082573",
+                          "column": {
+                            "dataSetIdentifier": "Recipe Run Trend",
+                            "columnName": "Unique Users"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": []
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-month-6fa01c.0.1786056075309",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "smallMultiplesLimitConfiguration": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "orientation": "VERTICAL",
+                "barsArrangement": "CLUSTERED",
+                "legend": {
+                  "width": "148px"
+                },
+                "dataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-month-6fa01c.0.1786056075309",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_ru-41dd42.1.1786056081399",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-distinct_-2d9ed5.2.1786056081975",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_us-a91912.3.1786056082573",
+                          "visibility": "VISIBLE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": [
+                {
+                  "dateTimeHierarchy": {
+                    "hierarchyId": "new_custo-month-6fa01c.0.1786056075309"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "2e92b3a3-5bda-42ab-a1e1-c76d2102a7d7",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 25,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "95b527df-7d56-47a5-8c74-41578b4cb5d8",
+        "name": "Security Recipe Run Trends",
+        "visuals": [
+          {
+            "comboChartVisual": {
+              "visualId": "b0470666-443d-4f6e-9aa0-284276fe4ae8",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Security Recipe Run Trend</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "comboChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "dateDimensionField": {
+                          "fieldId": "new_custo-month-4e87fb.5.1787606518471",
+                          "column": {
+                            "dataSetIdentifier": "Security Recipe Run Trend",
+                            "columnName": "Month"
+                          },
+                          "hierarchyId": "new_custo-month-4e87fb.5.1787606518471"
+                        }
+                      }
+                    ],
+                    "barValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-successfu-7b35b0.2.1787606510161",
+                          "column": {
+                            "dataSetIdentifier": "Security Recipe Run Trend",
+                            "columnName": "Successful Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_re-d5fd7e.3.1787606512229",
+                          "column": {
+                            "dataSetIdentifier": "Security Recipe Run Trend",
+                            "columnName": "Unique Repos Fixed"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-distinct_-e9e38b.4.1787606514512",
+                          "column": {
+                            "dataSetIdentifier": "Security Recipe Run Trend",
+                            "columnName": "Distinct Recipes"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": [],
+                    "lineValues": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-files_rem-f4e867.1.1787606497595",
+                          "column": {
+                            "dataSetIdentifier": "Security Recipe Run Trend",
+                            "columnName": "Files Remediated"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-estimated-1b6657.2.1787606500787",
+                          "column": {
+                            "dataSetIdentifier": "Security Recipe Run Trend",
+                            "columnName": "Est. Hours Saved"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-month-4e87fb.5.1787606518471",
+                        "direction": "ASC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "barsArrangement": "CLUSTERED",
+                "defaultSeriesSettings": {
+                  "markerStyleSettings": {
+                    "markerVisibility": "VISIBLE",
+                    "markerShape": "DIAMOND",
+                    "markerSize": "12px"
+                  }
+                },
+                "legend": {
+                  "width": "158px"
+                },
+                "barDataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-files_rem-f4e867.1.1787606497595",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-estimated-1b6657.2.1787606500787",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "LINE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-successfu-7b35b0.2.1787606510161",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_re-d5fd7e.3.1787606512229",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-distinct_-e9e38b.4.1787606514512",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BAR"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-month-4e87fb.5.1787606518471",
+                          "visibility": "VISIBLE",
+                          "tooltipTarget": "BOTH"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": [
+                {
+                  "dateTimeHierarchy": {
+                    "hierarchyId": "new_custo-month-4e87fb.5.1787606518471"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "b0470666-443d-4f6e-9aa0-284276fe4ae8",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 25,
+                    "rowIndex": 0,
+                    "rowSpan": 12
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "02803887-9692-48f0-b7cc-6d6f712879b7",
+        "name": "Top Recipes with Commits",
+        "visuals": [
+          {
+            "barChartVisual": {
+              "visualId": "ae837415-11d4-4fd0-a300-df99f6b5ddee",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Top Recipes with Commits</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "barChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "categoricalDimensionField": {
+                          "fieldId": "new_custo-recipe_na-201e92.0.1787606674970",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes with Commits",
+                            "columnName": "Recipe Name"
+                          }
+                        }
+                      }
+                    ],
+                    "values": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-commits-8a396b.1.1787606687705",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes with Commits",
+                            "columnName": "Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_us-d91638.2.1787606689025",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes with Commits",
+                            "columnName": "Unique Users"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": []
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-commits-8a396b.1.1787606687705",
+                        "direction": "DESC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "smallMultiplesLimitConfiguration": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "orientation": "HORIZONTAL",
+                "barsArrangement": "CLUSTERED",
+                "categoryAxis": {
+                  "scrollbarOptions": {
+                    "visibleRange": {
+                      "percentRange": {
+                        "from": 90.00000000000001,
+                        "to": 100.0
+                      }
+                    }
+                  }
+                },
+                "valueAxis": {
+                  "axisOffset": "414px"
+                },
+                "legend": {
+                  "width": "163px"
+                },
+                "dataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_na-201e92.0.1787606674970",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-commits-8a396b.1.1787606687705",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_us-d91638.2.1787606689025",
+                          "visibility": "VISIBLE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "ae837415-11d4-4fd0-a300-df99f6b5ddee",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 32,
+                    "rowIndex": 0,
+                    "rowSpan": 14
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "1bf8e5e2-3340-4001-a753-da03e41ce608",
+        "name": "Top Recipes",
+        "visuals": [
+          {
+            "barChartVisual": {
+              "visualId": "cb17ef73-6dae-41f6-ac3b-b123645bd05b",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>\n  Top Recipes\n  <br/>\n</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "barChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "categoricalDimensionField": {
+                          "fieldId": "new_custo-recipe_na-f4a500.0.1787607474617",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes",
+                            "columnName": "Recipe Name"
+                          }
+                        }
+                      }
+                    ],
+                    "values": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-repos_sea-8d24b6.1.1787607481444",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes",
+                            "columnName": "Repos Searched"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-unique_us-a2c414.2.1787607481987",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes",
+                            "columnName": "Unique Users"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-recipe_ru-763ce1.3.1787607482597",
+                          "column": {
+                            "dataSetIdentifier": "Top Recipes",
+                            "columnName": "Recipe Runs"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": []
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-repos_sea-8d24b6.1.1787607481444",
+                        "direction": "DESC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "smallMultiplesLimitConfiguration": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "orientation": "HORIZONTAL",
+                "barsArrangement": "CLUSTERED",
+                "categoryAxis": {
+                  "scrollbarOptions": {
+                    "visibleRange": {
+                      "percentRange": {
+                        "from": 90.0,
+                        "to": 100.0
+                      }
+                    }
+                  }
+                },
+                "valueAxis": {
+                  "axisOffset": "378px"
+                },
+                "legend": {
+                  "width": "163px"
+                },
+                "dataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_na-f4a500.0.1787607474617",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-repos_sea-8d24b6.1.1787607481444",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-unique_us-a2c414.2.1787607481987",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_ru-763ce1.3.1787607482597",
+                          "visibility": "VISIBLE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "cb17ef73-6dae-41f6-ac3b-b123645bd05b",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 32,
+                    "rowIndex": 0,
+                    "rowSpan": 21
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      },
+      {
+        "sheetId": "a322bc81-bbbb-4640-8761-02eb939c149c",
+        "name": "Top Users",
+        "visuals": [
+          {
+            "barChartVisual": {
+              "visualId": "c313a545-f52f-43d1-b5a7-e1e01f69b242",
+              "title": {
+                "visibility": "VISIBLE",
+                "formatText": {
+                  "richText": "<visual-title>Top Users</visual-title>"
+                }
+              },
+              "subtitle": {
+                "visibility": "VISIBLE"
+              },
+              "chartConfiguration": {
+                "fieldWells": {
+                  "barChartAggregatedFieldWells": {
+                    "category": [
+                      {
+                        "categoricalDimensionField": {
+                          "fieldId": "new_custo-developer-e8aa7b.0.1787607690965",
+                          "column": {
+                            "dataSetIdentifier": "Top Users",
+                            "columnName": "Developer"
+                          }
+                        }
+                      }
+                    ],
+                    "values": [
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-recipe_ru-60bcfa.1.1787607692495",
+                          "column": {
+                            "dataSetIdentifier": "Top Users",
+                            "columnName": "Recipe Runs"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      },
+                      {
+                        "numericalMeasureField": {
+                          "fieldId": "new_custo-commits-a9d33c.2.1787607693103",
+                          "column": {
+                            "dataSetIdentifier": "Top Users",
+                            "columnName": "Commits"
+                          },
+                          "aggregationFunction": {
+                            "simpleNumericalAggregation": "SUM"
+                          }
+                        }
+                      }
+                    ],
+                    "colors": []
+                  }
+                },
+                "sortConfiguration": {
+                  "categorySort": [
+                    {
+                      "fieldSort": {
+                        "fieldId": "new_custo-recipe_ru-60bcfa.1.1787607692495",
+                        "direction": "DESC"
+                      }
+                    }
+                  ],
+                  "categoryItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "colorItemsLimit": {
+                    "otherCategories": "INCLUDE"
+                  },
+                  "smallMultiplesLimitConfiguration": {
+                    "otherCategories": "INCLUDE"
+                  }
+                },
+                "orientation": "HORIZONTAL",
+                "barsArrangement": "CLUSTERED",
+                "categoryAxis": {
+                  "scrollbarOptions": {
+                    "visibleRange": {
+                      "percentRange": {
+                        "from": 89.5,
+                        "to": 99.5
+                      }
+                    }
+                  }
+                },
+                "valueAxis": {
+                  "axisOffset": "310px"
+                },
+                "dataLabels": {
+                  "visibility": "HIDDEN",
+                  "overlap": "DISABLE_OVERLAP"
+                },
+                "tooltip": {
+                  "tooltipVisibility": "VISIBLE",
+                  "selectedTooltipType": "DETAILED",
+                  "fieldBasedTooltip": {
+                    "aggregationVisibility": "HIDDEN",
+                    "tooltipTitleType": "PRIMARY_VALUE",
+                    "tooltipFields": [
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-developer-e8aa7b.0.1787607690965",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-recipe_ru-60bcfa.1.1787607692495",
+                          "visibility": "VISIBLE"
+                        }
+                      },
+                      {
+                        "fieldTooltipItem": {
+                          "fieldId": "new_custo-commits-a9d33c.2.1787607693103",
+                          "visibility": "VISIBLE"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "actions": [],
+              "columnHierarchies": []
+            }
+          }
+        ],
+        "layouts": [
+          {
+            "configuration": {
+              "gridLayout": {
+                "elements": [
+                  {
+                    "elementId": "c313a545-f52f-43d1-b5a7-e1e01f69b242",
+                    "elementType": "VISUAL",
+                    "columnIndex": 0,
+                    "columnSpan": 29,
+                    "rowIndex": 0,
+                    "rowSpan": 17
+                  }
+                ],
+                "canvasSizeOptions": {
+                  "screenCanvasSizeOptions": {
+                    "resizeOption": "FIXED",
+                    "optimizedViewPortWidth": "1600px"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "contentType": "INTERACTIVE"
+      }
+    ],
+    "calculatedFields": [
+      {
+        "dataSetIdentifier": "Build Tool Versions",
+        "name": "Built Tool + Version",
+        "expression": "concat({Build Tool}, ' ', {Tool Version})"
+      }
+    ],
+    "parameterDeclarations": [],
+    "filterGroups": [],
+    "analysisDefaults": {
+      "defaultNewSheetConfiguration": {
+        "interactiveLayoutConfiguration": {
+          "grid": {
+            "canvasSizeOptions": {
+              "screenCanvasSizeOptions": {
+                "resizeOption": "FIXED",
+                "optimizedViewPortWidth": "1600px"
+              }
+            }
+          }
+        },
+        "sheetContentType": "INTERACTIVE"
+      }
+    },
+    "options": {
+      "weekStart": "SUNDAY",
+      "customActionDefaults": {
+        "highlightOperation": {
+          "trigger": "DATA_POINT_CLICK"
+        }
+      },
+      "excludedDataSetArns": [],
+      "qbusinessInsightsStatus": "DISABLED"
+    },
+    "queryExecutionOptions": {
+      "queryExecutionMode": "AUTO"
+    }
+  },
+  "validationStrategy": {
+    "mode": "LENIENT"
+  }
+}

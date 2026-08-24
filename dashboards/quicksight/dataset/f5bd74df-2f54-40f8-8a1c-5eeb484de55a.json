@@ -1,0 +1,104 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "f5bd74df-2f54-40f8-8a1c-5eeb484de55a",
+  "name": "Commit Activity",
+  "physicalTableMap": {
+    "bfd58fa5-04e1-44dc-9e91-d0b6cac25a71": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Commit Activity",
+        "sqlQuery": "SELECT\n    date_trunc('month', commitstarttime)                AS month,\n    count(*)                                            AS successful_commits,\n    count(DISTINCT path)                                AS unique_repos_changed,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved\nFROM telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\nGROUP BY date_trunc('month', commitstarttime)\nORDER BY month",
+        "columns": [
+          {
+            "name": "month",
+            "id": "new_custo-month-846782",
+            "type": "DATETIME"
+          },
+          {
+            "name": "successful_commits",
+            "id": "new_custo-successfu-1d58da",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_repos_changed",
+            "id": "new_custo-unique_re-28606a",
+            "type": "INTEGER"
+          },
+          {
+            "name": "estimated_hours_saved",
+            "id": "new_custo-estimated-ac4613",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "d9ee8aaf-8dae-4c1d-9415-3316aa6d4d89": {
+        "physicalTableId": "bfd58fa5-04e1-44dc-9e91-d0b6cac25a71"
+      }
+    },
+    "transformStepMap": {
+      "ab30dbc6-5f0c-4640-873d-3d8d91585efb": {
+        "importTableStep": {
+          "alias": "Commit Activity",
+          "source": {
+            "sourceTableId": "d9ee8aaf-8dae-4c1d-9415-3316aa6d4d89"
+          }
+        }
+      },
+      "5f824555-11ff-4bd9-a11c-65110d567c62": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "ab30dbc6-5f0c-4640-873d-3d8d91585efb"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "month",
+              "newColumnName": "Month"
+            },
+            {
+              "columnName": "successful_commits",
+              "newColumnName": "Successful Commits"
+            },
+            {
+              "columnName": "unique_repos_changed",
+              "newColumnName": "Unique Repos Changed"
+            },
+            {
+              "columnName": "estimated_hours_saved",
+              "newColumnName": "Est. Hours Saved"
+            }
+          ]
+        }
+      }
+    },
+    "destinationTableMap": {
+      "da17131d-8640-4e44-81a0-a525e209ccdf": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "5f824555-11ff-4bd9-a11c-65110d567c62"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "070f68f9-c50a-4e7d-975c-865f03c3ead0": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "da17131d-8640-4e44-81a0-a525e209ccdf"
+      }
+    }
+  }
+}
