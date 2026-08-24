@@ -38,7 +38,7 @@ A thirteenth dataset, **`traces`**, is a direct relational table over `telemetry
 
 Other analysis-level details: NITRO theme, `LENIENT` validation, no parameters, no filter groups, and one calculated field — `Built Tool + Version` on the `Build Tool Versions` dataset, defined as `concat({Build Tool}, ' ', {Tool Version})`.
 
-All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than querying Athena live. The bundle carries no refresh schedules; after import, refresh each dataset once to populate it, then schedule refreshes to taste. It also carries no permissions or tags, so whoever runs the import becomes the sole owner of every asset.
+All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than querying Athena live. The bundle deliberately carries no refresh schedules, permissions, or tags — see [After import](#after-import) for what to set up once the assets land.
 
 ## Prerequisites
 
@@ -119,6 +119,65 @@ Use a fresh `--asset-bundle-import-job-id` for each attempt; IDs can't be reused
 ```
 
 That handles the **workgroup**, but not the two things most likely to block you: overrides can't rewrite the `<REGION>`/`<AWS_ACCOUNT_ID>` placeholders inside the ARNs, and dataset overrides accept only `DataSetId` and `Name` — there's no knob for the Athena schema. Both still need the substitutions in step 1.
+
+## After import
+
+A successful import creates the assets but leaves them empty and private. Three things are worth doing, in order. Substitute your own account ID and region throughout.
+
+### 1. Populate SPICE
+
+Every dataset imports empty — visuals stay blank until each one is ingested once. The dataset IDs are the filenames in `dataset/`, so the whole set can be kicked off in a loop:
+
+```bash
+for f in dataset/*.json; do id=$(basename "$f" .json); aws quicksight create-ingestion --region us-east-1 --aws-account-id 123456789012 --data-set-id "$id" --ingestion-id "initial-load-$id" --ingestion-type FULL_REFRESH; done
+```
+
+Ingestion IDs must be unique per dataset, hence the suffix. Poll one with `describe-ingestion` if a dataset looks wrong — a query that fails against your schema surfaces there, not at import time.
+
+### 2. Schedule refreshes
+
+This is the step the bundle intentionally leaves out: a schedule's `StartAfterDateTime` has to be in the future, so any date committed to the repo would go stale and start failing imports. Create one per dataset at whatever cadence suits your telemetry export:
+
+```bash
+aws quicksight create-refresh-schedule \
+  --region us-east-1 \
+  --aws-account-id 123456789012 \
+  --data-set-id 4716a22e-7f2b-4b0f-9ae5-575c91ec21e9 \
+  --schedule '{
+    "ScheduleId": "daily-full-refresh",
+    "RefreshType": "FULL_REFRESH",
+    "ScheduleFrequency": {
+      "Interval": "DAILY",
+      "TimeOfTheDay": "06:00",
+      "Timezone": "America/Los_Angeles"
+    }
+  }'
+```
+
+Daily suits a daily compaction job. Refreshing more often than the data layer lands new partitions just re-scans Athena for the same rows.
+
+### 3. Share it
+
+The bundle ships no permissions, so the principal that ran the import is the sole owner of all 15 assets. Granting access to the analysis alone is not enough — QuickSight resolves permissions per asset, so a viewer who can open the analysis but can't read its datasets gets errors instead of visuals. Grant down the whole chain: the analysis, all 13 datasets, and the data source.
+
+```bash
+aws quicksight update-analysis-permissions \
+  --region us-east-1 \
+  --aws-account-id 123456789012 \
+  --analysis-id c47fe26c-0ba2-4888-80dd-d89557138865 \
+  --grant-permissions \
+    Principal=arn:aws:quicksight:us-east-1:123456789012:group/default/analysts,Actions=quicksight:DescribeAnalysis,quicksight:QueryAnalysis,quicksight:DescribeAnalysisPermissions
+```
+
+Datasets take the equivalent read set via `update-data-set-permissions` (`DescribeDataSet`, `DescribeDataSetPermissions`, `PassDataSet`, `DescribeIngestion`, `ListIngestions`), and the data source via `update-data-source-permissions` (`DescribeDataSource`, `DescribeDataSourcePermissions`, `PassDataSource`). See the [QuickSight permissions docs](https://docs.aws.amazon.com/quicksight/latest/developerguide/security_iam_service-with-iam.html) for the full action lists.
+
+To hand this to people who shouldn't edit it, publish a read-only dashboard from the analysis with `create-dashboard --source-entity`, and share that instead.
+
+### Optional: switch to DIRECT_QUERY
+
+SPICE is the deliberate default here. These queries carry no date filter by design, so under DIRECT_QUERY every visual interaction re-scans every registered partition in Athena, where cost tracks bytes scanned — ten sheets of that adds up fast. SPICE confines Athena reads to refresh time, which is bounded and predictable, at the cost of showing a snapshot.
+
+If you want live data anyway, change `"importMode": "SPICE"` to `"importMode": "DIRECT_QUERY"` in each dataset **before** importing, and bound the scans by adding a partition predicate (`AND year = '2026'`) to each `sqlQuery`. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
 
 ## Round-tripping
 
