@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .moderne/
 .DS_Store
+
+.cursor/rules/*.local.mdc
