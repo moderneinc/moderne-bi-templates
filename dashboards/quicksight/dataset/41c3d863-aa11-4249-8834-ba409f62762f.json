@@ -1,0 +1,575 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "41c3d863-aa11-4249-8834-ba409f62762f",
+  "name": "traces",
+  "physicalTableMap": {
+    "3b96ff99-8e11-4e3c-94f7-120adc19b12c": {
+      "relationalTable": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "catalog": "AwsDataCatalog",
+        "schema": "moderne_telemetry",
+        "name": "traces",
+        "inputColumns": [
+          {
+            "name": "origin",
+            "id": "traces-origin-d0be0d",
+            "type": "STRING"
+          },
+          {
+            "name": "path",
+            "id": "traces-path-3d30f7",
+            "type": "STRING"
+          },
+          {
+            "name": "branch",
+            "id": "traces-branch-8a3519",
+            "type": "STRING"
+          },
+          {
+            "name": "developer",
+            "id": "traces-developer-ceb2af",
+            "type": "STRING"
+          },
+          {
+            "name": "syncoutcome",
+            "id": "traces-syncoutco-732174",
+            "type": "STRING"
+          },
+          {
+            "name": "synccloneuri",
+            "id": "traces-syncclone-f98090",
+            "type": "STRING"
+          },
+          {
+            "name": "synclstdownloaduri",
+            "id": "traces-synclstdo-13c299",
+            "type": "STRING"
+          },
+          {
+            "name": "syncstarttime",
+            "id": "traces-syncstart-06df09",
+            "type": "DATETIME"
+          },
+          {
+            "name": "syncendtime",
+            "id": "traces-syncendti-026149",
+            "type": "DATETIME"
+          },
+          {
+            "name": "syncchangeset",
+            "id": "traces-syncchang-d0a904",
+            "type": "STRING"
+          },
+          {
+            "name": "syncelapsedtimems",
+            "id": "traces-syncelaps-d3f83b",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildoutcome",
+            "id": "traces-buildoutc-b31814",
+            "type": "STRING"
+          },
+          {
+            "name": "buildstarttime",
+            "id": "traces-buildstar-253b27",
+            "type": "DATETIME"
+          },
+          {
+            "name": "buildendtime",
+            "id": "traces-buildendt-1f06b6",
+            "type": "DATETIME"
+          },
+          {
+            "name": "buildid",
+            "id": "traces-buildid-ed1da7",
+            "type": "STRING"
+          },
+          {
+            "name": "builddependencyresolutiontimems",
+            "id": "traces-builddepe-3a8e4e",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildchangeset",
+            "id": "traces-buildchan-589e79",
+            "type": "STRING"
+          },
+          {
+            "name": "buildmavenversion",
+            "id": "traces-buildmave-18f054",
+            "type": "STRING"
+          },
+          {
+            "name": "buildgradleversion",
+            "id": "traces-buildgrad-f1388c",
+            "type": "STRING"
+          },
+          {
+            "name": "buildbazelversion",
+            "id": "traces-buildbaze-f54f2b",
+            "type": "STRING"
+          },
+          {
+            "name": "builddotnetversion",
+            "id": "traces-builddotn-0164a4",
+            "type": "STRING"
+          },
+          {
+            "name": "buildpythonversion",
+            "id": "traces-buildpyth-45907e",
+            "type": "STRING"
+          },
+          {
+            "name": "buildnodeversion",
+            "id": "traces-buildnode-ad0ab7",
+            "type": "STRING"
+          },
+          {
+            "name": "buildosname",
+            "id": "traces-buildosna-efba73",
+            "type": "STRING"
+          },
+          {
+            "name": "buildosversion",
+            "id": "traces-buildosve-7bf6fc",
+            "type": "STRING"
+          },
+          {
+            "name": "buildoseol",
+            "id": "traces-buildoseo-67c7d8",
+            "type": "STRING"
+          },
+          {
+            "name": "buildgitautocrlf",
+            "id": "traces-buildgita-e861e4",
+            "type": "STRING"
+          },
+          {
+            "name": "buildgiteol",
+            "id": "traces-buildgite-e6175d",
+            "type": "STRING"
+          },
+          {
+            "name": "buildsourcefilecount",
+            "id": "traces-buildsour-ecb187",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildlinecount",
+            "id": "traces-buildline-fd0f9a",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildparseerrorcount",
+            "id": "traces-buildpars-49e152",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildweight",
+            "id": "traces-buildweig-95ec38",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildmaxweight",
+            "id": "traces-buildmaxw-aca457",
+            "type": "INTEGER"
+          },
+          {
+            "name": "buildmaxweightsourcefile",
+            "id": "traces-buildmaxw-eaef3a",
+            "type": "STRING"
+          },
+          {
+            "name": "buildcliversion",
+            "id": "traces-buildcliv-7f05e5",
+            "type": "STRING"
+          },
+          {
+            "name": "buildelapsedtimems",
+            "id": "traces-buildelap-6c935a",
+            "type": "INTEGER"
+          },
+          {
+            "name": "runoutcome",
+            "id": "traces-runoutcom-6ee131",
+            "type": "STRING"
+          },
+          {
+            "name": "runstarttime",
+            "id": "traces-runstartt-8ccf71",
+            "type": "DATETIME"
+          },
+          {
+            "name": "runendtime",
+            "id": "traces-runendtim-418246",
+            "type": "DATETIME"
+          },
+          {
+            "name": "runid",
+            "id": "traces-runid-1b66c0",
+            "type": "STRING"
+          },
+          {
+            "name": "rununlicensedattempt",
+            "id": "traces-rununlice-7adb96",
+            "type": "BOOLEAN"
+          },
+          {
+            "name": "runstreaming",
+            "id": "traces-runstream-94b0db",
+            "type": "BOOLEAN"
+          },
+          {
+            "name": "runrecipeid",
+            "id": "traces-runrecipe-4c8916",
+            "type": "STRING"
+          },
+          {
+            "name": "runrecipeinstancename",
+            "id": "traces-runrecipe-24ed58",
+            "type": "STRING"
+          },
+          {
+            "name": "runrecipeoptions",
+            "id": "traces-runrecipe-83a9f0",
+            "type": "STRING"
+          },
+          {
+            "name": "runrecipeartifact",
+            "id": "traces-runrecipe-6b63ad",
+            "type": "STRING"
+          },
+          {
+            "name": "runestimatedefforttimesavingsms",
+            "id": "traces-runestima-bf5b28",
+            "type": "INTEGER"
+          },
+          {
+            "name": "rundependencyresolutiontimems",
+            "id": "traces-rundepend-7bd809",
+            "type": "INTEGER"
+          },
+          {
+            "name": "runpomcachehitrate",
+            "id": "traces-runpomcac-498754",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          },
+          {
+            "name": "runresolvedpomcachehitrate",
+            "id": "traces-runresolv-48a7a0",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          },
+          {
+            "name": "runfileswithfixresults",
+            "id": "traces-runfilesw-4a980c",
+            "type": "INTEGER"
+          },
+          {
+            "name": "runfileswithsearchresults",
+            "id": "traces-runfilesw-1dd7ce",
+            "type": "INTEGER"
+          },
+          {
+            "name": "runfileswitherrors",
+            "id": "traces-runfilesw-052b0c",
+            "type": "INTEGER"
+          },
+          {
+            "name": "runfilessearched",
+            "id": "traces-runfiless-633667",
+            "type": "INTEGER"
+          },
+          {
+            "name": "rundatatables",
+            "id": "traces-rundatata-b38441",
+            "type": "STRING"
+          },
+          {
+            "name": "runthread",
+            "id": "traces-runthread-8cbbd0",
+            "type": "STRING"
+          },
+          {
+            "name": "runelapsedtimems",
+            "id": "traces-runelapse-0ebd59",
+            "type": "INTEGER"
+          },
+          {
+            "name": "applyoutcome",
+            "id": "traces-applyoutc-bbca10",
+            "type": "STRING"
+          },
+          {
+            "name": "applystarttime",
+            "id": "traces-applystar-df1465",
+            "type": "DATETIME"
+          },
+          {
+            "name": "applyendtime",
+            "id": "traces-applyendt-545577",
+            "type": "DATETIME"
+          },
+          {
+            "name": "applyid",
+            "id": "traces-applyid-eb14e7",
+            "type": "STRING"
+          },
+          {
+            "name": "applyelapsedtimems",
+            "id": "traces-applyelap-ceefe9",
+            "type": "INTEGER"
+          },
+          {
+            "name": "addoutcome",
+            "id": "traces-addoutcom-f14eb4",
+            "type": "STRING"
+          },
+          {
+            "name": "addstarttime",
+            "id": "traces-addstartt-66e52f",
+            "type": "DATETIME"
+          },
+          {
+            "name": "addendtime",
+            "id": "traces-addendtim-2d7f64",
+            "type": "DATETIME"
+          },
+          {
+            "name": "addid",
+            "id": "traces-addid-27b061",
+            "type": "STRING"
+          },
+          {
+            "name": "addelapsedtimems",
+            "id": "traces-addelapse-f923b3",
+            "type": "INTEGER"
+          },
+          {
+            "name": "commitoutcome",
+            "id": "traces-commitout-f66c04",
+            "type": "STRING"
+          },
+          {
+            "name": "commitstarttime",
+            "id": "traces-commitsta-d85e4c",
+            "type": "DATETIME"
+          },
+          {
+            "name": "commitendtime",
+            "id": "traces-commitend-7a53da",
+            "type": "DATETIME"
+          },
+          {
+            "name": "commitid",
+            "id": "traces-commitid-d3fa28",
+            "type": "STRING"
+          },
+          {
+            "name": "commitbranch",
+            "id": "traces-commitbra-6ce552",
+            "type": "STRING"
+          },
+          {
+            "name": "commitelapsedtimems",
+            "id": "traces-commitela-83e074",
+            "type": "INTEGER"
+          },
+          {
+            "name": "publishoutcome",
+            "id": "traces-publishou-d6bf8b",
+            "type": "STRING"
+          },
+          {
+            "name": "publishstarttime",
+            "id": "traces-publishst-35d7de",
+            "type": "DATETIME"
+          },
+          {
+            "name": "publishendtime",
+            "id": "traces-publishen-0add48",
+            "type": "DATETIME"
+          },
+          {
+            "name": "publishid",
+            "id": "traces-publishid-59bbd1",
+            "type": "STRING"
+          },
+          {
+            "name": "publishuri",
+            "id": "traces-publishur-3a87f6",
+            "type": "STRING"
+          },
+          {
+            "name": "publishelapsedtimems",
+            "id": "traces-publishel-123e38",
+            "type": "INTEGER"
+          },
+          {
+            "name": "mcpoutcome",
+            "id": "traces-mcpoutcom-64758b",
+            "type": "STRING"
+          },
+          {
+            "name": "mcpstarttime",
+            "id": "traces-mcpstartt-f40291",
+            "type": "DATETIME"
+          },
+          {
+            "name": "mcpendtime",
+            "id": "traces-mcpendtim-3893d6",
+            "type": "DATETIME"
+          },
+          {
+            "name": "mcpsessionid",
+            "id": "traces-mcpsessio-aa50f5",
+            "type": "STRING"
+          },
+          {
+            "name": "mcptoolname",
+            "id": "traces-mcptoolna-51dc4b",
+            "type": "STRING"
+          },
+          {
+            "name": "mcprecipeid",
+            "id": "traces-mcprecipe-0c56f8",
+            "type": "STRING"
+          },
+          {
+            "name": "mcpmatchcount",
+            "id": "traces-mcpmatchc-ded5de",
+            "type": "INTEGER"
+          },
+          {
+            "name": "mcpchangecount",
+            "id": "traces-mcpchange-34cfeb",
+            "type": "INTEGER"
+          },
+          {
+            "name": "mcprunid",
+            "id": "traces-mcprunid-babf5f",
+            "type": "STRING"
+          },
+          {
+            "name": "mcpresultbytes",
+            "id": "traces-mcpresult-cbc142",
+            "type": "INTEGER"
+          },
+          {
+            "name": "mcparguments",
+            "id": "traces-mcpargume-c8c6d2",
+            "type": "STRING"
+          },
+          {
+            "name": "mcpelapsedtimems",
+            "id": "traces-mcpelapse-9961e6",
+            "type": "INTEGER"
+          },
+          {
+            "name": "organization",
+            "id": "traces-organizat-2e900c",
+            "type": "STRING"
+          },
+          {
+            "name": "tenant",
+            "id": "traces-tenant-2826f7",
+            "type": "STRING"
+          },
+          {
+            "name": "source",
+            "id": "traces-source-f162b2",
+            "type": "STRING"
+          },
+          {
+            "name": "type",
+            "id": "traces-type-61bf94",
+            "type": "STRING"
+          },
+          {
+            "name": "year",
+            "id": "traces-year-6432ca",
+            "type": "STRING"
+          },
+          {
+            "name": "month",
+            "id": "traces-month-945438",
+            "type": "STRING"
+          },
+          {
+            "name": "day",
+            "id": "traces-day-670fee",
+            "type": "STRING"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "efcb0af6-5d57-4604-b062-2a28bd374983": {
+        "physicalTableId": "3b96ff99-8e11-4e3c-94f7-120adc19b12c"
+      }
+    },
+    "transformStepMap": {
+      "e979bbed-be48-4268-b49b-d4bedee52445": {
+        "createColumnsStep": {
+          "alias": "Add calculated columns 1",
+          "source": {
+            "transformOperationId": "ab1eedfe-19fa-42b0-a270-cd850a804971"
+          },
+          "columns": [
+            {
+              "columnName": "event_date",
+              "columnId": "add_calcu-event_dat-qDwjqr",
+              "expression": "coalesce(commitstarttime, runstarttime, buildstarttime, syncstarttime)"
+            },
+            {
+              "columnName": "hours_saved",
+              "columnId": "add_calcu-hours_sav-TP8al2",
+              "expression": "runestimatedefforttimesavingsms / 3600000"
+            },
+            {
+              "columnName": "repo",
+              "columnId": "add_calcu-repo-ymOlOc",
+              "expression": "concat(origin, '/', path)"
+            }
+          ]
+        }
+      },
+      "ab1eedfe-19fa-42b0-a270-cd850a804971": {
+        "importTableStep": {
+          "alias": "traces",
+          "source": {
+            "sourceTableId": "efcb0af6-5d57-4604-b062-2a28bd374983"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "8f554b01-ffa6-4c5e-b934-64676fc871ae": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "e979bbed-be48-4268-b49b-d4bedee52445"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "b76e73a0-0649-42d6-9aa1-2906af816606": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "8f554b01-ffa6-4c5e-b934-64676fc871ae"
+      }
+    }
+  }
+}

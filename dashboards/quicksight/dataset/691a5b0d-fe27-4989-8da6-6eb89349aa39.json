@@ -1,0 +1,122 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "691a5b0d-fe27-4989-8da6-6eb89349aa39",
+  "name": "Build Success Trend",
+  "physicalTableMap": {
+    "1b6d26a0-7dd2-409a-a7bc-d099028ebf95": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Build Success Trend",
+        "sqlQuery": "SELECT\n    date_trunc('month', buildstarttime)                                   AS month,\n    count(DISTINCT buildid)                                               AS total_builds,\n    count(DISTINCT CASE WHEN buildoutcome = 'Succeeded' THEN buildid END) AS successful_builds,\n    count(DISTINCT CASE WHEN buildoutcome <> 'Succeeded' THEN buildid END) AS failed_builds,\n    round(100.0 * count(DISTINCT CASE WHEN buildoutcome = 'Succeeded' THEN buildid END)\n        / count(DISTINCT buildid), 1)                                     AS success_rate_pct,\n    count(DISTINCT path)                                                  AS unique_repos\nFROM moderne_telemetry.traces\nWHERE type IN ('build', 'run', 'apply', 'add', 'commit', 'publish')\n  AND buildstarttime IS NOT NULL\nGROUP BY date_trunc('month', buildstarttime)\nORDER BY month",
+        "columns": [
+          {
+            "name": "month",
+            "id": "new_custo-month-bd6c69",
+            "type": "DATETIME"
+          },
+          {
+            "name": "total_builds",
+            "id": "new_custo-total_bui-d50fd8",
+            "type": "INTEGER"
+          },
+          {
+            "name": "successful_builds",
+            "id": "new_custo-successfu-0ad985",
+            "type": "INTEGER"
+          },
+          {
+            "name": "failed_builds",
+            "id": "new_custo-failed_bu-f6dd51",
+            "type": "INTEGER"
+          },
+          {
+            "name": "success_rate_pct",
+            "id": "new_custo-success_r-624105",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          },
+          {
+            "name": "unique_repos",
+            "id": "new_custo-unique_re-9f8fbb",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "534f8c3c-a3c1-4d70-94cb-bbe8b7191e7b": {
+        "physicalTableId": "1b6d26a0-7dd2-409a-a7bc-d099028ebf95"
+      }
+    },
+    "transformStepMap": {
+      "80bfb2b7-bd6a-4a55-a5aa-e6f28522509b": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "d30127d2-2873-48ea-b4fa-5d150900c562"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "month",
+              "newColumnName": "Month"
+            },
+            {
+              "columnName": "total_builds",
+              "newColumnName": "Total Builds"
+            },
+            {
+              "columnName": "successful_builds",
+              "newColumnName": "Successful Builds"
+            },
+            {
+              "columnName": "failed_builds",
+              "newColumnName": "Failed Builds"
+            },
+            {
+              "columnName": "success_rate_pct",
+              "newColumnName": "Success Rate %"
+            },
+            {
+              "columnName": "unique_repos",
+              "newColumnName": "Unique Repos"
+            }
+          ]
+        }
+      },
+      "d30127d2-2873-48ea-b4fa-5d150900c562": {
+        "importTableStep": {
+          "alias": "Build Success Trend",
+          "source": {
+            "sourceTableId": "534f8c3c-a3c1-4d70-94cb-bbe8b7191e7b"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "7d827270-7d90-49ec-b519-a6a02873a1ec": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "80bfb2b7-bd6a-4a55-a5aa-e6f28522509b"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "9b0ecf23-b362-4f77-a341-16bd190f15bc": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "7d827270-7d90-49ec-b519-a6a02873a1ec"
+      }
+    }
+  }
+}

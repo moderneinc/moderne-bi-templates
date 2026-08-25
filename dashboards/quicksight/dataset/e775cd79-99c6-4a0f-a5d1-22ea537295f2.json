@@ -1,0 +1,113 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "e775cd79-99c6-4a0f-a5d1-22ea537295f2",
+  "name": "Top Recipes with Commits",
+  "physicalTableMap": {
+    "3d230131-ecc8-40ce-9020-bb5a288d73da": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Top Recipes with Commits",
+        "sqlQuery": "SELECT\n    runrecipeid                                                AS recipe_id,\n    max(runrecipeinstancename)                                 AS recipe_name,\n    count(DISTINCT commitid)                                   AS commits,\n    count(DISTINCT developer)                                  AS unique_users,\n    round(sum(runestimatedefforttimesavingsms) / 3600000.0, 1) AS estimated_hours_saved\nFROM moderne_telemetry.traces\nWHERE type = 'commit'\n  AND commitstarttime IS NOT NULL\n  AND commitoutcome = 'Succeeded'\n  AND runrecipeid <> ''\nGROUP BY runrecipeid\nORDER BY commits DESC",
+        "columns": [
+          {
+            "name": "recipe_id",
+            "id": "new_custo-recipe_id-1b6075",
+            "type": "STRING"
+          },
+          {
+            "name": "recipe_name",
+            "id": "new_custo-recipe_na-201e92",
+            "type": "STRING"
+          },
+          {
+            "name": "commits",
+            "id": "new_custo-commits-8a396b",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_users",
+            "id": "new_custo-unique_us-d91638",
+            "type": "INTEGER"
+          },
+          {
+            "name": "estimated_hours_saved",
+            "id": "new_custo-estimated-dd218a",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "d716eb65-1e2e-49c5-8d3c-7e5621a891fd": {
+        "physicalTableId": "3d230131-ecc8-40ce-9020-bb5a288d73da"
+      }
+    },
+    "transformStepMap": {
+      "3de7e85a-61dd-44fd-ad98-fa002e67f4ff": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "0e9d0036-3cb6-425d-97d9-ee6433e40278"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "recipe_id",
+              "newColumnName": "Recipe ID"
+            },
+            {
+              "columnName": "recipe_name",
+              "newColumnName": "Recipe Name"
+            },
+            {
+              "columnName": "commits",
+              "newColumnName": "Commits"
+            },
+            {
+              "columnName": "unique_users",
+              "newColumnName": "Unique Users"
+            },
+            {
+              "columnName": "estimated_hours_saved",
+              "newColumnName": "Est. Hours Saved"
+            }
+          ]
+        }
+      },
+      "0e9d0036-3cb6-425d-97d9-ee6433e40278": {
+        "importTableStep": {
+          "alias": "Top Recipes with Commits",
+          "source": {
+            "sourceTableId": "d716eb65-1e2e-49c5-8d3c-7e5621a891fd"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "742e7cd5-ef21-4c45-997e-e538f28f0735": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "3de7e85a-61dd-44fd-ad98-fa002e67f4ff"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "b9ec5261-b973-4544-8fe2-2f41ac7ad32a": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "742e7cd5-ef21-4c45-997e-e538f28f0735"
+      }
+    }
+  }
+}

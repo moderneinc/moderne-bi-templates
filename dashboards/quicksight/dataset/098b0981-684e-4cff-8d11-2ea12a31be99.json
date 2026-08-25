@@ -1,0 +1,131 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "098b0981-684e-4cff-8d11-2ea12a31be99",
+  "name": "Dashboard KPIs Trend",
+  "physicalTableMap": {
+    "7ef2002f-600d-4d15-97de-fdddfa554837": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Dashboard KPIs Trend",
+        "sqlQuery": "WITH runs AS (\n    SELECT\n        date_trunc('month', runstarttime)     AS month,\n        count(DISTINCT runid)                 AS recipe_runs,\n        count(DISTINCT developer)             AS unique_users,\n        count(DISTINCT runrecipeid)           AS unique_recipes,\n        sum(runfileswithfixresults)           AS files_changed,\n        sum(runestimatedefforttimesavingsms)  AS savings_ms\n    FROM moderne_telemetry.traces\n    WHERE type = 'run'\n      AND runstarttime IS NOT NULL\n    GROUP BY 1\n),\ncommits AS (\n    SELECT\n        date_trunc('month', commitstarttime) AS month,\n        count(*)                             AS commits\n    FROM moderne_telemetry.traces\n    WHERE type = 'commit'\n      AND commitstarttime IS NOT NULL\n      AND commitoutcome = 'Succeeded'\n    GROUP BY 1\n)\nSELECT\n    coalesce(r.month, c.month)                      AS month,\n    coalesce(r.recipe_runs, 0)                      AS recipe_runs,\n    coalesce(c.commits, 0)                          AS commits,\n    coalesce(r.unique_users, 0)                     AS unique_users,\n    coalesce(r.unique_recipes, 0)                   AS unique_recipes,\n    coalesce(r.files_changed, 0)                    AS files_changed,\n    round(coalesce(r.savings_ms, 0) / 3600000.0, 1) AS estimated_hours_saved\nFROM runs r\nFULL OUTER JOIN commits c ON r.month = c.month\nORDER BY month",
+        "columns": [
+          {
+            "name": "month",
+            "id": "new_custo-month-8eaadb",
+            "type": "DATETIME"
+          },
+          {
+            "name": "recipe_runs",
+            "id": "new_custo-recipe_ru-493099",
+            "type": "INTEGER"
+          },
+          {
+            "name": "commits",
+            "id": "new_custo-commits-5dcbd8",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_users",
+            "id": "new_custo-unique_us-eb28df",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_recipes",
+            "id": "new_custo-unique_re-ecbe49",
+            "type": "INTEGER"
+          },
+          {
+            "name": "files_changed",
+            "id": "new_custo-files_cha-c1f90d",
+            "type": "INTEGER"
+          },
+          {
+            "name": "estimated_hours_saved",
+            "id": "new_custo-estimated-7632ae",
+            "type": "DECIMAL",
+            "subType": "FLOAT"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "11f758ae-5967-440f-93d4-521cea7bedeb": {
+        "physicalTableId": "7ef2002f-600d-4d15-97de-fdddfa554837"
+      }
+    },
+    "transformStepMap": {
+      "522d5f35-1dff-4975-ae46-0c7ecc44d4b3": {
+        "importTableStep": {
+          "alias": "Dashboard KPIs Trend",
+          "source": {
+            "sourceTableId": "11f758ae-5967-440f-93d4-521cea7bedeb"
+          }
+        }
+      },
+      "fe942aa2-1a68-4cb3-a4ed-fbe68fd33a43": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "522d5f35-1dff-4975-ae46-0c7ecc44d4b3"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "month",
+              "newColumnName": "Month"
+            },
+            {
+              "columnName": "recipe_runs",
+              "newColumnName": "Recipe Runs"
+            },
+            {
+              "columnName": "commits",
+              "newColumnName": "Commits"
+            },
+            {
+              "columnName": "unique_users",
+              "newColumnName": "Unique Users"
+            },
+            {
+              "columnName": "unique_recipes",
+              "newColumnName": "Unique Recipes"
+            },
+            {
+              "columnName": "files_changed",
+              "newColumnName": "Files Changed"
+            },
+            {
+              "columnName": "estimated_hours_saved",
+              "newColumnName": "Est. Hours Saved"
+            }
+          ]
+        }
+      }
+    },
+    "destinationTableMap": {
+      "cd751b2b-1476-4c7e-a02c-aafc29f259cc": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "fe942aa2-1a68-4cb3-a4ed-fbe68fd33a43"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "f18db91e-c689-42b6-8041-8d733bc01312": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "cd751b2b-1476-4c7e-a02c-aafc29f259cc"
+      }
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "0cbcac07-577e-4fec-b1fc-a952a6374790",
+  "name": "Build Tool Distribution",
+  "physicalTableMap": {
+    "98e244ec-7615-4d39-b06f-94fda8d3d853": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Build Tool Distribution",
+        "sqlQuery": "SELECT\n    CASE\n        WHEN buildmavenversion  <> '' THEN 'Maven'\n        WHEN buildgradleversion <> '' THEN 'Gradle'\n        WHEN buildbazelversion  <> '' THEN 'Bazel'\n        WHEN builddotnetversion <> '' THEN '.NET'\n        WHEN buildpythonversion <> '' THEN 'Python'\n        WHEN buildnodeversion   <> '' THEN 'Node.js'\n        ELSE 'Other'\n    END                      AS build_tool,\n    count(DISTINCT path)     AS repos,\n    count(DISTINCT buildid)  AS builds\nFROM moderne_telemetry.traces\nWHERE type IN ('build', 'run', 'apply', 'add', 'commit', 'publish')\n  AND buildoutcome = 'Succeeded'\nGROUP BY 1\nORDER BY repos DESC",
+        "columns": [
+          {
+            "name": "build_tool",
+            "id": "new_custo-build_too-38749e",
+            "type": "STRING"
+          },
+          {
+            "name": "repos",
+            "id": "new_custo-repos-dc6499",
+            "type": "INTEGER"
+          },
+          {
+            "name": "builds",
+            "id": "new_custo-builds-9fa81d",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "6cb2efa3-4ae1-4d78-861f-453aad61e16e": {
+        "physicalTableId": "98e244ec-7615-4d39-b06f-94fda8d3d853"
+      }
+    },
+    "transformStepMap": {
+      "ba539f60-d9c8-404f-8810-155d52ad957e": {
+        "importTableStep": {
+          "alias": "Build Tool Distribution",
+          "source": {
+            "sourceTableId": "6cb2efa3-4ae1-4d78-861f-453aad61e16e"
+          }
+        }
+      },
+      "f3304db4-e2bb-44ad-8001-25b90e48a46a": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "ba539f60-d9c8-404f-8810-155d52ad957e"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "build_tool",
+              "newColumnName": "Build Tool"
+            },
+            {
+              "columnName": "repos",
+              "newColumnName": "Repos"
+            },
+            {
+              "columnName": "builds",
+              "newColumnName": "Builds"
+            }
+          ]
+        }
+      }
+    },
+    "destinationTableMap": {
+      "319e1594-43fc-4159-a2fd-c9a55cba01fd": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "f3304db4-e2bb-44ad-8001-25b90e48a46a"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "75a958b7-bce6-4472-8966-07107ae2d48a": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "319e1594-43fc-4159-a2fd-c9a55cba01fd"
+      }
+    }
+  }
+}

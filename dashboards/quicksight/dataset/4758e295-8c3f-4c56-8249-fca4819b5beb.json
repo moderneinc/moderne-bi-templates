@@ -1,0 +1,103 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "4758e295-8c3f-4c56-8249-fca4819b5beb",
+  "name": "Recipe Run Trend",
+  "physicalTableMap": {
+    "3dd7594b-cc8d-4e0d-8ca9-30006144f395": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Recipe Run Trend",
+        "sqlQuery": "SELECT\n    date_trunc('month', runstarttime) AS month,\n    count(DISTINCT runid)             AS recipe_runs,\n    count(DISTINCT runrecipeid)       AS distinct_recipes,\n    count(DISTINCT developer)         AS unique_users\nFROM moderne_telemetry.traces\nWHERE type = 'run'\n  AND runstarttime IS NOT NULL\nGROUP BY date_trunc('month', runstarttime)\nORDER BY month",
+        "columns": [
+          {
+            "name": "month",
+            "id": "new_custo-month-6fa01c",
+            "type": "DATETIME"
+          },
+          {
+            "name": "recipe_runs",
+            "id": "new_custo-recipe_ru-41dd42",
+            "type": "INTEGER"
+          },
+          {
+            "name": "distinct_recipes",
+            "id": "new_custo-distinct_-2d9ed5",
+            "type": "INTEGER"
+          },
+          {
+            "name": "unique_users",
+            "id": "new_custo-unique_us-a91912",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "fdf02c10-121e-483b-80dc-5bf97cf2cea5": {
+        "physicalTableId": "3dd7594b-cc8d-4e0d-8ca9-30006144f395"
+      }
+    },
+    "transformStepMap": {
+      "a4037b6b-27be-4fed-ba21-657d2c4fc72b": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "dd0937e0-004e-4562-9a00-6971c666935f"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "month",
+              "newColumnName": "Month"
+            },
+            {
+              "columnName": "recipe_runs",
+              "newColumnName": "Recipe Runs"
+            },
+            {
+              "columnName": "distinct_recipes",
+              "newColumnName": "Distinct Recipes"
+            },
+            {
+              "columnName": "unique_users",
+              "newColumnName": "Unique Users"
+            }
+          ]
+        }
+      },
+      "dd0937e0-004e-4562-9a00-6971c666935f": {
+        "importTableStep": {
+          "alias": "Recipe Run Trend",
+          "source": {
+            "sourceTableId": "fdf02c10-121e-483b-80dc-5bf97cf2cea5"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "249929a5-9bb1-401e-a91b-1cb2648fa661": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "a4037b6b-27be-4fed-ba21-657d2c4fc72b"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "30dc8d41-fda7-4487-ab96-4acbb8c1a2aa": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "249929a5-9bb1-401e-a91b-1cb2648fa661"
+      }
+    }
+  }
+}

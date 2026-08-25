@@ -1,0 +1,94 @@
+{
+  "resourceType": "dataset",
+  "dataSetId": "4716a22e-7f2b-4b0f-9ae5-575c91ec21e9",
+  "name": "Top Users",
+  "physicalTableMap": {
+    "d4cd5a22-d9c7-46ab-beb7-e75f2606866b": {
+      "customSql": {
+        "dataSourceArn": "arn:aws:quicksight:<REGION>:<AWS_ACCOUNT_ID>:datasource/0727c710-7910-4a77-bfce-a0ad18953eea",
+        "name": "Top Users",
+        "sqlQuery": "SELECT\n    coalesce(r.developer, c.developer) AS developer,\n    coalesce(r.recipe_runs, 0)         AS recipe_runs,\n    coalesce(c.commits, 0)             AS commits\nFROM (\n    SELECT developer, count(DISTINCT runid) AS recipe_runs\n    FROM moderne_telemetry.traces\n    WHERE type = 'run'\n      AND runstarttime IS NOT NULL\n      AND developer <> ''\n    GROUP BY developer\n) r\nFULL OUTER JOIN (\n    SELECT developer, count(DISTINCT commitid) AS commits\n    FROM moderne_telemetry.traces\n    WHERE type = 'commit'\n      AND commitstarttime IS NOT NULL\n      AND commitoutcome = 'Succeeded'\n      AND developer <> ''\n    GROUP BY developer\n) c ON r.developer = c.developer\nORDER BY recipe_runs DESC",
+        "columns": [
+          {
+            "name": "developer",
+            "id": "new_custo-developer-e8aa7b",
+            "type": "STRING"
+          },
+          {
+            "name": "recipe_runs",
+            "id": "new_custo-recipe_ru-60bcfa",
+            "type": "INTEGER"
+          },
+          {
+            "name": "commits",
+            "id": "new_custo-commits-a9d33c",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    }
+  },
+  "importMode": "SPICE",
+  "dataSetRefreshProperties": {
+    "failureConfiguration": {
+      "emailAlert": {
+        "alertStatus": "ENABLED"
+      }
+    }
+  },
+  "dataPrepConfiguration": {
+    "sourceTableMap": {
+      "fb5e3c6f-e9b4-4b8e-a85b-142d490d7962": {
+        "physicalTableId": "d4cd5a22-d9c7-46ab-beb7-e75f2606866b"
+      }
+    },
+    "transformStepMap": {
+      "3e1ceccf-1012-4643-b84a-1561196ae4f0": {
+        "renameColumnsStep": {
+          "alias": "Rename columns 1",
+          "source": {
+            "transformOperationId": "d2944aee-db59-4642-abad-64e44db73d87"
+          },
+          "renameColumnOperations": [
+            {
+              "columnName": "developer",
+              "newColumnName": "Developer"
+            },
+            {
+              "columnName": "recipe_runs",
+              "newColumnName": "Recipe Runs"
+            },
+            {
+              "columnName": "commits",
+              "newColumnName": "Commits"
+            }
+          ]
+        }
+      },
+      "d2944aee-db59-4642-abad-64e44db73d87": {
+        "importTableStep": {
+          "alias": "Top Users",
+          "source": {
+            "sourceTableId": "fb5e3c6f-e9b4-4b8e-a85b-142d490d7962"
+          }
+        }
+      }
+    },
+    "destinationTableMap": {
+      "8e95f487-3ad3-46d0-bcf3-70a25c25a92b": {
+        "alias": "Destination Table 1",
+        "source": {
+          "transformOperationId": "3e1ceccf-1012-4643-b84a-1561196ae4f0"
+        }
+      }
+    }
+  },
+  "semanticModelConfiguration": {
+    "tableMap": {
+      "4cec9eb6-f9cc-4352-be97-6779a7825f0a": {
+        "alias": "Semantic Table 1",
+        "destinationTableId": "8e95f487-3ad3-46d0-bcf3-70a25c25a92b"
+      }
+    }
+  }
+}
