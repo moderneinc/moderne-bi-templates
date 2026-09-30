@@ -21,7 +21,7 @@ The three layers map to the familiar medallion pattern — raw CSV (**bronze**) 
 Every query and visualization here expects the same logical table, however you produce it:
 
 - One wide table, **`traces`**, the union of every command stage's columns (see the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv)).
-- Partitioned by `tenant`, `source`, `type`, `year`, `month`, `day`.
+- Carries `tenant`, `source`, `type`, `year`, `month`, `day` columns, taken from each object's key.
 - Keyed by command **`type`** (`run`, `commit`, `build`, …); a row whose type lacks a stage reads those columns as `NULL`.
 - Columns are **typed** (timestamps, counts, durations, rates, booleans) — queries need no casts.
 - `tenant` is a partition column, but your export contains only your own tenant, so the reports don't filter on it.
@@ -70,8 +70,7 @@ moderne-bi-templates/
 ├── data-layer/                   # optimize the raw CSV for querying
 │   ├── README.md                 # the `traces` contract, shared by every engine
 │   └── athena/
-│       ├── ddl/                  # CREATE DATABASE / per-type ingest tables / traces
-│       ├── compaction/           # daily CSV → Parquet job (example)
+│       ├── glue/                 # nightly Glue job: raw CSV → typed Iceberg `traces` (example)
 │       └── views/                # optional convenience views (no report depends on them)
 ├── reports/                    # one self-contained report per folder
 │   └── <report>/
