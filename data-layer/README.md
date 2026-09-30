@@ -13,7 +13,7 @@ Each subdirectory is one engine's way of producing that table. AWS Athena is wor
 Every report expects the same logical table, regardless of how you produce it:
 
 - One wide table, `traces`, the **union of every command stage's columns** (see the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv)).
-- Partitioned by `tenant`, `source`, `type`, `year`, `month`, `day` (Hive-style keys, exactly as the CLI and platform write them to object storage).
+- Carries `tenant`, `source`, `type`, `year`, `month`, `day` columns, taken from the Hive-style keys the CLI and platform write to object storage. Filtering on them lets the engine skip data.
 - Keyed by command **`type`** (`run`, `commit`, `build`, and so on). A row whose type lacks a stage reads those columns as `NULL`.
 - Columns are **typed** (timestamps, counts, durations, rates, booleans), so queries need no casts.
 - `tenant` is a partition column, but your export contains only your own tenant, so the reports don't filter on it.
@@ -28,13 +28,13 @@ Trace CSV replicates into a bucket you own with this key layout (see the [teleme
 tenant=<your-tenant>/source={saas|cli}/type=<command>/year=YYYY/month=MM/day=DD/<command-id>.csv
 ```
 
-Because each command **type** writes a different CSV width and column order, one positional table cannot parse them all. So the layer is built in stages: a table per command type over the raw CSV, a compaction step that writes typed Parquet, and the wide `traces` table over that output.
+Each command **type** writes a different set of columns, and new trace fields appear over time. So the layer reads each CSV object by its own header, keeps every raw row, and builds the wide, typed `traces` table from that:
 
 ```
-raw CSV (per-type)  ──►  ingest tables  ──►  compaction  ──►  traces  ──►  reports
+raw CSV  ──►  traces_raw (every row, as strings)  ──►  traces (typed)  ──►  reports
 ```
 
-Compaction is optional but recommended. You can point reports at the raw CSV tables instead and skip it entirely, trading query speed and cost for less to run. See [`athena/`](athena/) for both paths.
+See [`athena/`](athena/) for a nightly AWS Glue job that does this.
 
 ## Adding another engine
 

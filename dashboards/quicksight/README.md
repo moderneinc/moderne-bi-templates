@@ -43,7 +43,7 @@ All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than q
 ## Prerequisites
 
 - An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary — the repo sets no convention for it, so use whichever one you created in [step 3 of the Athena setup](../../data-layer/athena/README.md#3-create-an-athena-workgroup).
-- A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's DDL](../../data-layer/athena/ddl/01-create-database.sql) creates — so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
+- A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's Glue job](../../data-layer/athena/glue/) creates — so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
 - **QuickSight permission to create SPICE datasets**, plus enough SPICE capacity for 13 datasets. The importing principal needs `quicksight:StartAssetBundleImportJob` and create permissions on analyses, datasets, and data sources.
 
 The 12 custom-SQL datasets read 22 columns from `traces`:
@@ -161,7 +161,7 @@ aws quicksight create-refresh-schedule \
   }'
 ```
 
-Daily suits a daily compaction job. Refreshing more often than the data layer lands new partitions just re-scans Athena for the same rows.
+Daily suits the nightly data-layer job. Refreshing more often than the data layer lands new partitions just re-scans Athena for the same rows.
 
 ### 3. Share it
 
@@ -182,7 +182,7 @@ To hand this to people who shouldn't edit it, publish a read-only dashboard from
 
 ### Optional: switch to DIRECT_QUERY
 
-SPICE is the deliberate default here. These queries carry no date filter by design, so under DIRECT_QUERY every visual interaction re-scans every registered partition in Athena, where cost tracks bytes scanned — ten sheets of that adds up fast. SPICE confines Athena reads to refresh time, which is bounded and predictable, at the cost of showing a snapshot.
+SPICE is the deliberate default here. These queries carry no date filter by design, so under DIRECT_QUERY every visual interaction re-scans every partition in Athena, where cost tracks bytes scanned — ten sheets of that adds up fast. SPICE confines Athena reads to refresh time, which is bounded and predictable, at the cost of showing a snapshot.
 
 If you want live data anyway, change `"importMode": "SPICE"` to `"importMode": "DIRECT_QUERY"` in each dataset **before** importing, and bound the scans by adding a partition predicate (`AND year = '2026'`) to each `sqlQuery`. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
 
