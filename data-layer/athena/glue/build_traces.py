@@ -24,6 +24,7 @@ import datetime
 import logging
 import re
 import sys
+from typing import NamedTuple
 
 from awsglue.context import GlueContext
 from awsglue.job import Job
@@ -31,35 +32,272 @@ from awsglue.utils import getResolvedOptions
 from pyspark import SparkConf
 from pyspark.context import SparkContext
 from pyspark.sql import functions as F
+from pyspark.sql import types as T
+from pyspark.storagelevel import StorageLevel
 
 LOG = logging.getLogger("build_traces")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s", force=True)
 
+ARGUMENTS = ["JOB_NAME", "raw_location", "warehouse", "database"]
+TARGET_TABLE = "traces"
 RAW_TABLE = "traces_raw"
-TABLE = "traces"
 TYPING_TABLE = "traces_typing"
+GROUP_SIZE_BYTES = str(128 * 1024 * 1024)
 
-# The export key layout: tenant=.../source=.../type=.../year=YYYY/month=MM/day=DD/<id>.csv
+# ---- rules: key layout and typing rules ----
+
 PARTITION_COLUMNS = ("tenant", "source", "type", "year", "month", "day")
 PARTITION_SPEC = PARTITION_COLUMNS[:5]  # month-level partitions; `day` stays a column
+SOURCE_KEY_COLUMN = "_source_key"  # the object each raw row came from
+
 KEY_PATTERN = (
     r"^tenant=([^/=]+)/source=([^/=]+)/type=([^/=]+)"
     r"/year=(\d{4})/month=(\d{2})/day=(\d{2})/[^/]+\.csv$"
 )
-SOURCE_KEY = "_source_key"  # the object each raw row came from
 
-# A column takes the first type that at least 99.9% of its non-null values match.
-TYPE_PATTERNS = {
-    "boolean": r"^(true|false)$",
-    "bigint": r"^-?\d{1,18}$",
-    "double": r"^(-?\d{1,18}(\.\d+)?([eE][+-]?\d+)?|NaN|-?Infinity)$",
-    "timestamp": r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$",
+BOOLEAN_PATTERN = r"^(true|false)$"
+BIGINT_PATTERN = r"^-?\d{1,18}$"
+DOUBLE_PATTERN = r"^(-?\d{1,18}(\.\d+)?([eE][+-]?\d+)?|NaN|-?Infinity)$"
+TIMESTAMP_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$"
+
+# A column takes the first rule that at least 99.9% of its non-null values match.
+RULE_PATTERNS = {
+    "boolean": BOOLEAN_PATTERN,
+    "bigint": BIGINT_PATTERN,
+    "double": DOUBLE_PATTERN,
+    "timestamp": TIMESTAMP_PATTERN,
 }
-THRESHOLD = 0.999
-ISO_TO_SPARK = r"^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(\.\d{1,6})?\d*Z$"
+RULES = tuple(RULE_PATTERNS)
+
+THRESHOLD_NUMERATOR = 999
+THRESHOLD_DENOMINATOR = 1000
 
 
-def spark_conf(warehouse):
+class ColumnStats(NamedTuple):
+    non_null: int
+    matches: dict
+
+
+def is_always_string(column):
+    return column in PARTITION_COLUMNS or column.endswith("id") or column.startswith("tag_")
+
+
+def decide_type(column, non_null, matches):
+    if is_always_string(column) or non_null == 0:
+        return "string"
+    for rule in RULES:
+        if matches[rule] * THRESHOLD_DENOMINATOR >= THRESHOLD_NUMERATOR * non_null:
+            return rule
+    return "string"
+
+
+def merge_totals(previous, increment):
+    merged = dict(previous)
+    for column, stats in increment.items():
+        base = merged.get(column, ColumnStats(0, dict.fromkeys(RULES, 0)))
+        merged[column] = ColumnStats(
+            base.non_null + stats.non_null,
+            {rule: base.matches[rule] + stats.matches[rule] for rule in RULES},
+        )
+    return merged
+
+
+def changed_decisions(current, decided):
+    return {c: (current[c], decided[c]) for c in decided if c in current and current[c] != decided[c]}
+
+
+def rebuild_needed(changed, raw_exists, silver_exists, replaced):
+    return bool(changed) or not raw_exists or not silver_exists or replaced > 0
+
+
+# ---- transforms: raw CSV rows to typed rows ----
+
+ISO_TO_CANONICAL = r"^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(\.\d{1,6})?\d*Z$"
+
+
+def normalize_columns(df):
+    """Lowercase headers to the names Athena exposes (runStartTime -> runstarttime,
+    tag.team -> tag_team). Headers that collapse to the same name are coalesced."""
+    positional = df.toDF(*[f"c{i}" for i in range(len(df.columns))])
+    merged = {}
+    for index, original in enumerate(df.columns):
+        name = re.sub(r"[^a-z0-9_]", "_", original.strip().lower())
+        merged.setdefault(name, []).append(F.col(f"c{index}"))
+    return positional.select(*[
+        (F.coalesce(*[F.when(c != "", c) for c in cols]) if len(cols) > 1 else cols[0]).alias(name)
+        for name, cols in merged.items()
+    ])
+
+
+def _relative_key(raw_location):
+    return F.substring(F.col(SOURCE_KEY_COLUMN), len(raw_location) + 1, 4096)
+
+
+def with_partition_columns(df, raw_location):
+    clash = [c for c in PARTITION_COLUMNS if c in df.columns]
+    if clash:
+        raise ValueError(f"trace columns collide with partition columns: {clash}")
+    relative = _relative_key(raw_location)
+    out = df
+    for index, name in enumerate(PARTITION_COLUMNS, start=1):
+        out = out.withColumn(name, F.regexp_extract(relative, KEY_PATTERN, index))
+    return out
+
+
+def _outside_layout(raw_location):
+    key = F.col(SOURCE_KEY_COLUMN)
+    return key.isNull() | (F.regexp_extract(_relative_key(raw_location), KEY_PATTERN, 0) == "")
+
+
+def invalid_keys(df, raw_location, limit=5):
+    rows = (
+        df.filter(_outside_layout(raw_location))
+        .select(SOURCE_KEY_COLUMN)
+        .distinct()
+        .limit(limit)
+        .collect()
+    )
+    return [r[0] for r in rows]
+
+
+def nullify_empty(df):
+    return df.select(*[F.when(F.col(c) == "", None).otherwise(F.col(c)).alias(c) for c in df.columns])
+
+
+def profile(df, columns):
+    """One aggregate pass: per column, its non-null count and how many values match each rule."""
+    aggregates = []
+    for column in columns:
+        col = F.col(column)
+        aggregates.append(F.count(col).alias(f"{column}__nonnull"))
+        for rule, pattern in RULE_PATTERNS.items():
+            aggregates.append(F.count(F.when(col.rlike(pattern), True)).alias(f"{column}__{rule}"))
+    row = df.agg(*aggregates).first()
+    return {
+        column: ColumnStats(row[f"{column}__nonnull"], {rule: row[f"{column}__{rule}"] for rule in RULES})
+        for column in columns
+    }
+
+
+def _typed(col, rule):
+    if rule == "boolean":
+        return F.when(col.rlike(BOOLEAN_PATTERN), col == "true")
+    if rule == "bigint":
+        return F.when(col.rlike(BIGINT_PATTERN), col.cast("long"))
+    if rule == "double":
+        return F.when(col.rlike(DOUBLE_PATTERN), col.cast("double"))
+    if rule == "timestamp":
+        canonical = F.regexp_replace(col, ISO_TO_CANONICAL, "$1 $2$3")
+        return F.when(col.rlike(TIMESTAMP_PATTERN), F.to_timestamp_ntz(canonical))
+
+
+def apply_types(df, decided):
+    return df.select(*[
+        (F.col(c) if decided.get(c, "string") == "string" else _typed(F.col(c), decided[c])).alias(c)
+        for c in df.columns
+    ])
+
+
+SPARK_TYPE_RULES = {
+    T.LongType: "bigint",
+    T.DoubleType: "double",
+    T.BooleanType: "boolean",
+    T.TimestampNTZType: "timestamp",
+    T.StringType: "string",
+}
+
+
+def current_types(schema):
+    return {field.name: SPARK_TYPE_RULES.get(type(field.dataType)) for field in schema.fields}
+
+
+# ---- tables: Iceberg reads, writes, and maintenance ----
+
+TYPING_COLUMNS = ("column_name", "non_null") + tuple(f"matches_{rule}" for rule in RULES) + ("decided",)
+KEYS_VIEW = "incoming_keys"
+
+
+def _clustered(df):
+    return df.repartition(*PARTITION_SPEC).sortWithinPartitions(*PARTITION_COLUMNS)
+
+
+def replace_table(df, table, location):
+    (
+        _clustered(df)
+        .writeTo(table)
+        .using("iceberg")
+        .partitionedBy(*[F.col(c) for c in PARTITION_SPEC])
+        .tableProperty("format-version", "2")
+        .tableProperty("location", location)
+        .tableProperty("write.distribution-mode", "none")
+        .tableProperty("write.spark.accept-any-schema", "true")  # new trace fields add columns
+        .createOrReplace()
+    )
+
+
+def append_rows(df, table):
+    # mergeSchema adds new trace fields as columns; check-ordering lets a new field
+    # arrive mid-header instead of only at the end of the table's column list.
+    _clustered(df).writeTo(table).option("mergeSchema", "true").option("check-ordering", "false").append()
+
+
+def rows_with_keys(spark, table, keys):
+    keys.createOrReplaceTempView(KEYS_VIEW)
+    return spark.sql(
+        f"SELECT count(*) AS n FROM {table} "
+        f"WHERE {SOURCE_KEY_COLUMN} IN (SELECT {SOURCE_KEY_COLUMN} FROM {KEYS_VIEW})"
+    ).first()["n"]
+
+
+def delete_keys(spark, table, keys):
+    keys.createOrReplaceTempView(KEYS_VIEW)
+    spark.sql(
+        f"DELETE FROM {table} WHERE {SOURCE_KEY_COLUMN} IN (SELECT {SOURCE_KEY_COLUMN} FROM {KEYS_VIEW})"
+    )
+
+
+def expire_snapshots(spark, table, older_than, retain_last=5):
+    spark.sql(
+        f"CALL glue_catalog.system.expire_snapshots(table => '{_identifier(table)}', "
+        f"older_than => TIMESTAMP '{older_than:%Y-%m-%d %H:%M:%S}', retain_last => {retain_last})"
+    )
+
+
+def compact(spark, table):
+    spark.sql(f"CALL glue_catalog.system.rewrite_data_files(table => '{_identifier(table)}')")
+
+
+def _identifier(table):
+    return table.removeprefix("glue_catalog.")
+
+
+def save_totals(spark, table, location, totals, decided):
+    rows = [
+        (column, stats.non_null, *[stats.matches[rule] for rule in RULES], decided[column])
+        for column, stats in sorted(totals.items())
+    ]
+    df = spark.createDataFrame(rows, list(TYPING_COLUMNS))
+    (
+        df.writeTo(table)
+        .using("iceberg")
+        .tableProperty("format-version", "2")
+        .tableProperty("location", location)
+        .createOrReplace()
+    )
+
+
+def load_totals(spark, table):
+    if not spark.catalog.tableExists(table):
+        return {}
+    return {
+        r["column_name"]: ColumnStats(r["non_null"], {rule: r[f"matches_{rule}"] for rule in RULES})
+        for r in spark.table(table).collect()
+    }
+
+
+# ---- the job ----
+
+def iceberg_conf(warehouse):
     """Register the Glue Data Catalog as an Iceberg catalog named glue_catalog."""
     return (
         SparkConf()
@@ -72,228 +310,117 @@ def spark_conf(warehouse):
     )
 
 
-def read_new_csv(glue, raw_location):
+def read_csv(glue, raw_location):
     """Read the CSV objects the job bookmark has not seen yet, each by its own header."""
-    return glue.create_dynamic_frame.from_options(
+    dyf = glue.create_dynamic_frame.from_options(
         connection_type="s3",
         connection_options={
             "paths": [raw_location],
             "recurse": True,
             "groupFiles": "inPartition",
-            "attachFilename": SOURCE_KEY,
+            "groupSize": GROUP_SIZE_BYTES,
+            "attachFilename": SOURCE_KEY_COLUMN,
         },
         format="csv",
         format_options={"withHeader": True, "multiLine": True},
-        transformation_ctx="raw_csv",  # the bookmark is keyed on this
-    ).toDF()
-
-
-def normalize_columns(df):
-    """Lowercase headers to the names Athena exposes (runStartTime -> runstarttime,
-    tag.team -> tag_team). Headers that collapse to the same name are coalesced."""
-    positional = df.toDF(*[f"c{i}" for i in range(len(df.columns))])
-    merged = {}
-    for i, header in enumerate(df.columns):
-        name = re.sub(r"[^a-z0-9_]", "_", header.strip().lower())
-        merged.setdefault(name, []).append(F.col(f"c{i}"))
-    return positional.select(*[
-        (F.coalesce(*[F.when(c != "", c) for c in cols]) if len(cols) > 1 else cols[0]).alias(name)
-        for name, cols in merged.items()
-    ])
-
-
-def with_partition_columns(df, raw_location):
-    """Derive the partition columns from each row's object key. Any other CSV under
-    raw_location would add its columns to the table, so it fails the run instead."""
-    relative = F.substring(F.col(SOURCE_KEY), len(raw_location) + 1, 4096)
-    outside = F.regexp_extract(relative, KEY_PATTERN, 0) == ""
-    stray = [r[0] for r in df.filter(outside).select(SOURCE_KEY).distinct().limit(5).collect()]
-    if stray:
-        raise RuntimeError(f"objects outside the trace layout under {raw_location}: {stray}")
-    for i, name in enumerate(PARTITION_COLUMNS, start=1):
-        df = df.withColumn(name, F.regexp_extract(relative, KEY_PATTERN, i))
-    return df
-
-
-def nullify_empty(df):
-    return df.select(*[F.when(F.col(c) == "", None).otherwise(F.col(c)).alias(c) for c in df.columns])
-
-
-def append_rows(df, table):
-    # mergeSchema adds new trace fields as columns; check-ordering lets a new field
-    # arrive mid-header instead of only at the end of the table's column list.
-    df.writeTo(table).option("mergeSchema", "true").option("check-ordering", "false").append()
-
-
-def create_table(df, table, location, partitioned=True):
-    writer = df.writeTo(table).using("iceberg")
-    if partitioned:
-        writer = writer.partitionedBy(*[F.col(c) for c in PARTITION_SPEC])
-    (writer.tableProperty("format-version", "2")
-        .tableProperty("location", location)
-        .tableProperty("write.spark.accept-any-schema", "true")  # new trace fields add columns
-        .createOrReplace())
-
-
-def upsert_raw(spark, increment, raw, location):
-    """Append the new rows to traces_raw, first deleting rows from any object read again.
-    Returns how many earlier rows were replaced."""
-    ordered = increment.sortWithinPartitions(*PARTITION_COLUMNS)
-    if not spark.catalog.tableExists(raw):
-        create_table(ordered, raw, location)
-        return 0
-    increment.select(SOURCE_KEY).distinct().createOrReplaceTempView("incoming_keys")
-    matching = f"{SOURCE_KEY} IN (SELECT {SOURCE_KEY} FROM incoming_keys)"
-    replaced = spark.sql(f"SELECT count(*) AS n FROM {raw} WHERE {matching}").first()["n"]
-    if replaced:
-        LOG.warning("%d row(s) from objects delivered again will be replaced", replaced)
-        spark.sql(f"DELETE FROM {raw} WHERE {matching}")
-    append_rows(ordered, raw)
-    return replaced
-
-
-def always_string(column):
-    return column in PARTITION_COLUMNS or column.endswith("id") or column.startswith("tag_")
+        transformation_ctx=f"raw_csv:{raw_location}",  # the bookmark is keyed on this
+    )
+    return dyf.toDF()
 
 
 def data_columns(df):
-    return [c for c in df.columns if c not in PARTITION_COLUMNS and c != SOURCE_KEY]
-
-
-def count_matches(df):
-    """One aggregate pass: per column, its non-null count and how many values match each type."""
-    columns = data_columns(df)
-    aggregates = []
-    for c in columns:
-        aggregates.append(F.count(F.col(c)).alias(f"{c}__non_null"))
-        for t, pattern in TYPE_PATTERNS.items():
-            aggregates.append(F.count(F.when(F.col(c).rlike(pattern), True)).alias(f"{c}__{t}"))
-    row = df.agg(*aggregates).first()
-    return {c: {k: row[f"{c}__{k}"] for k in ("non_null", *TYPE_PATTERNS)} for c in columns}
-
-
-def add_counts(previous, new):
-    totals = {c: dict(counts) for c, counts in previous.items()}
-    for c, counts in new.items():
-        base = totals.setdefault(c, dict.fromkeys(counts, 0))
-        for k, n in counts.items():
-            base[k] += n
-    return totals
-
-
-def decide(column, counts):
-    n = counts["non_null"]
-    if n == 0 or always_string(column):
-        return "string"
-    return next((t for t in TYPE_PATTERNS if counts[t] >= THRESHOLD * n), "string")
-
-
-def load_counts(spark, typing):
-    if not spark.catalog.tableExists(typing):
-        return None
-    return {r["column_name"]: {k: r[k] for k in ("non_null", *TYPE_PATTERNS)} for r in spark.table(typing).collect()}
-
-
-def save_counts(spark, typing, location, totals, decided):
-    rows = [(c, *[totals[c][k] for k in ("non_null", *TYPE_PATTERNS)], decided[c]) for c in sorted(totals)]
-    create_table(spark.createDataFrame(rows, ["column_name", "non_null", *TYPE_PATTERNS, "decided"]),
-                 typing, location, partitioned=False)
-
-
-SPARK_TYPES = {"LongType": "bigint", "DoubleType": "double", "BooleanType": "boolean",
-               "TimestampNTZType": "timestamp", "StringType": "string"}
-
-
-def current_types(spark, table):
-    if not spark.catalog.tableExists(table):
-        return None
-    return {f.name: SPARK_TYPES.get(type(f.dataType).__name__) for f in spark.table(table).schema.fields}
-
-
-def typed(column, type_name):
-    col = F.col(column)
-    ok = col.rlike(TYPE_PATTERNS[type_name])
-    if type_name == "boolean":
-        return F.when(ok, col == "true")
-    if type_name == "bigint":
-        return F.when(ok, col.cast("long"))
-    if type_name == "double":
-        return F.when(ok, col.cast("double"))
-    return F.when(ok, F.to_timestamp_ntz(F.regexp_replace(col, ISO_TO_SPARK, "$1 $2$3")))
-
-
-def apply_types(df, decided):
-    df = df.drop(SOURCE_KEY)
-    return df.select(*[
-        (F.col(c) if decided.get(c, "string") == "string" else typed(c, decided[c])).alias(c)
-        for c in df.columns
-    ])
-
-
-def maintain(spark, tables):
-    """Expire snapshots older than a day, and compact the small files appends leave behind."""
-    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
-    for t in tables:
-        name = t.removeprefix("glue_catalog.")
-        spark.sql(f"CALL glue_catalog.system.expire_snapshots(table => '{name}', "
-                  f"older_than => TIMESTAMP '{cutoff:%Y-%m-%d %H:%M:%S}', retain_last => 5)")
-        spark.sql(f"CALL glue_catalog.system.rewrite_data_files(table => '{name}')")
+    return [c for c in df.columns if c not in PARTITION_COLUMNS and c != SOURCE_KEY_COLUMN]
 
 
 def main():
-    args = getResolvedOptions(sys.argv, ["JOB_NAME", "raw_location", "warehouse", "database"])
-    raw_location, warehouse = args["raw_location"], args["warehouse"]
-    raw, table, typing = (f"glue_catalog.{args['database']}.{t}" for t in (RAW_TABLE, TABLE, TYPING_TABLE))
+    args = getResolvedOptions(sys.argv, ARGUMENTS)
+    raw_location = args["raw_location"]
+    warehouse = args["warehouse"]
 
     def location(name):
         return f"{warehouse}{name}/"
 
-    glue = GlueContext(SparkContext.getOrCreate(spark_conf(warehouse)))
+    silver = f"glue_catalog.{args['database']}.{TARGET_TABLE}"
+    raw = f"glue_catalog.{args['database']}.{RAW_TABLE}"
+    typing = f"glue_catalog.{args['database']}.{TYPING_TABLE}"
+
+    sc = SparkContext.getOrCreate(iceberg_conf(warehouse))
+    glue = GlueContext(sc)
     spark = glue.spark_session
     job = Job(glue)
     job.init(args["JOB_NAME"], args)
     spark.sql(f"CREATE DATABASE IF NOT EXISTS glue_catalog.{args['database']}")
 
-    incoming = read_new_csv(glue, raw_location)
-    if not incoming.columns:
-        LOG.info("no new objects under %s", raw_location)
+    incoming = read_csv(glue, raw_location)
+
+    raw_exists = spark.catalog.tableExists(raw)
+    silver_exists = spark.catalog.tableExists(silver)
+    ingested = 0
+    if incoming.columns:
+        increment = nullify_empty(with_partition_columns(normalize_columns(incoming), raw_location))
+        increment = increment.persist(StorageLevel.MEMORY_AND_DISK)
+        bad = invalid_keys(increment, raw_location)
+        if bad:
+            # Any other CSV under raw_location would add its columns to the table.
+            raise RuntimeError(f"object(s) outside the trace layout under {raw_location}: {bad} "
+                               "(None means no file name was attached)")
+        ingested = increment.count()
+    if not ingested:
+        if not raw_exists:
+            raise RuntimeError(f"no trace rows read under {raw_location}")
+        LOG.info("no new rows under %s", raw_location)
         job.commit()
         return
 
-    increment = nullify_empty(with_partition_columns(normalize_columns(incoming), raw_location)).cache()
-    LOG.info("%d new row(s)", increment.count())
-    first_run = not spark.catalog.tableExists(raw)
-    replaced = upsert_raw(spark, increment, raw, location(RAW_TABLE))
+    columns = data_columns(increment)
+    stats = profile(increment, columns)
 
-    # Running counts cover every raw row. Replaced rows can't be subtracted from them,
-    # so after a replace (or with no counts yet) they are recounted from traces_raw.
-    previous = None if first_run or replaced else load_counts(spark, typing)
-    if previous is None:
-        totals = count_matches(spark.table(raw))
+    keys = increment.select(SOURCE_KEY_COLUMN).distinct()
+    current = current_types(spark.table(silver).schema) if silver_exists else {}
+    replaced = 0
+    if raw_exists:
+        replaced = rows_with_keys(spark, raw, keys)
+        if replaced:
+            LOG.warning("%d row(s) of already ingested objects were replaced", replaced)
+            delete_keys(spark, raw, keys)
+        append_rows(increment, raw)
     else:
-        totals = add_counts(previous, count_matches(increment))
-    decided = {c: decide(c, counts) for c, counts in totals.items()}
-    save_counts(spark, typing, location(TYPING_TABLE), totals, decided)
+        replace_table(increment, raw, location(RAW_TABLE))
 
-    current = current_types(spark, table)
-    changed = sorted(c for c in decided if current and c in current and current[c] != decided[c])
-    for c in changed:
-        LOG.info("column %s changes type from %s to %s", c, current[c], decided[c])
-
-    if current is None or replaced or changed:
-        LOG.info("rebuilding %s from %s", table, raw)
-        history = apply_types(spark.table(raw), decided)
-        create_table(history.repartition(*PARTITION_SPEC).sortWithinPartitions(*PARTITION_COLUMNS),
-                     table, location(TABLE))
+    # Running totals cover every raw row. Replaced rows can't be subtracted from them,
+    # so after a replace (or with no totals yet) they are recounted from traces_raw.
+    previous = {} if not raw_exists or replaced else load_totals(spark, typing)
+    if previous:
+        totals = merge_totals(previous, stats)
     else:
-        LOG.info("appending to %s", table)
-        append_rows(apply_types(increment, decided).sortWithinPartitions(*PARTITION_COLUMNS), table)
+        if raw_exists and not replaced:
+            LOG.warning("%s has no totals; profiling %s from history", typing, raw)
+        history = spark.table(raw)
+        totals = profile(history, data_columns(history))
+    decided = {c: decide_type(c, s.non_null, s.matches) for c, s in totals.items()}
+    save_totals(spark, typing, location(TYPING_TABLE), totals, decided)
+
+    changed = changed_decisions(current, decided)
+    for column, (old, new) in sorted(changed.items()):
+        LOG.info("column %s changes from %s to %s", column, old, new)
+    rebuild = rebuild_needed(changed, raw_exists, silver_exists, replaced)
+
+    if rebuild:
+        history = apply_types(spark.table(raw).drop(SOURCE_KEY_COLUMN), decided)
+        replace_table(history, silver, location(TARGET_TABLE))
+    else:
+        append_rows(apply_types(increment.drop(SOURCE_KEY_COLUMN), decided), silver)
     increment.unpersist()
+    LOG.info("%s %s: %d rows ingested", "rebuilt" if rebuild else "appended", silver, ingested)
 
     # Advance the bookmark only once every table is written. If the job fails before
-    # this, the next run re-reads the same objects and the upsert replaces their rows.
+    # this, the next run re-reads the same objects and they replace their own rows.
     job.commit()
-    maintain(spark, (raw, table, typing))
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
+    for table in (silver, raw, typing):
+        expire_snapshots(spark, table, cutoff)
+    for table in (silver, raw):
+        compact(spark, table)
 
 
 if __name__ == "__main__":
