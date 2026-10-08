@@ -5,27 +5,34 @@ Each run:
 1. Reads only the raw CSV objects it has not seen before (Glue job bookmarks), each by
    its own header, so every command type's column set lands by name and a new trace
    field needs no DDL change.
-2. Appends those rows, all as strings, to the Iceberg table `traces_raw`. An object
-   that is delivered again replaces its earlier rows, and a late object lands in the
-   day its key names, so there is no separate backfill step.
-3. Gives each column one type (boolean, bigint, double, timestamp, or string) decided
+2. Also reads any object from the last three days that `traces_raw` doesn't have.
+   S3 replication keeps the source's last-modified time, so a replica that lands after
+   a run has started looks older than that run and the bookmark alone would skip it.
+3. Appends those rows, all as strings, to the Iceberg table `traces_raw`. An object
+   that is delivered again replaces its earlier rows.
+4. Gives each column one type (boolean, bigint, double, timestamp, or string) decided
    from every value it has ever held. Running per-column counts in `traces_typing` mean
-   only the new rows are scanned to update those decisions.
-4. Appends the new rows, typed, to the Iceberg table `traces`. It rebuilds `traces` from
-   `traces_raw` only when it has to: on the first run, when a column's type changes,
-   or when an object was delivered again. Values that don't match their column's type
+   only the new (and replaced) rows are scanned to update those decisions.
+5. Appends the new rows, typed, to the Iceberg table `traces`, replacing the rows of
+   any object delivered again. It rebuilds `traces` from `traces_raw` only on the first
+   run or when a column's type changes. Values that don't match their column's type
    become NULL.
-5. Expires old Iceberg snapshots and compacts the small files nightly appends leave.
+6. Expires old Iceberg snapshots and compacts the small files nightly appends leave.
 
 This is a minimal example for a single tenant's export, with no metrics or alarms.
 """
 
 import datetime
+import hashlib
 import logging
+import operator
 import re
 import sys
+from functools import reduce
 from typing import NamedTuple
 
+import boto3
+from botocore.config import Config
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from awsglue.utils import getResolvedOptions
@@ -42,6 +49,8 @@ ARGUMENTS = ["JOB_NAME", "raw_location", "warehouse", "database"]
 TARGET_TABLE = "traces"
 RAW_TABLE = "traces_raw"
 TYPING_TABLE = "traces_typing"
+RECONCILE_LOOKBACK = datetime.timedelta(days=3)
+GLUE_BOOKMARK_GRACE_PERIOD = datetime.timedelta(minutes=15)
 GROUP_SIZE_BYTES = str(128 * 1024 * 1024)
 
 # ---- rules: key layout and typing rules ----
@@ -58,7 +67,10 @@ KEY_PATTERN = (
 BOOLEAN_PATTERN = r"^(true|false)$"
 BIGINT_PATTERN = r"^-?\d{1,18}$"
 DOUBLE_PATTERN = r"^(-?\d{1,18}(\.\d+)?([eE][+-]?\d+)?|NaN|-?Infinity)$"
-TIMESTAMP_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$"
+# Timestamps end in Z or a +-HH:MM offset, optionally followed by a zone id such as [Etc/UTC].
+OPTIONAL_ZONE_ID = r"(?:\[[^\]]+\])?$"
+ZONE_SUFFIX = r"(?:Z|[+-]\d{2}:\d{2})" + OPTIONAL_ZONE_ID
+TIMESTAMP_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?" + ZONE_SUFFIX
 
 # A column takes the first rule that at least 99.9% of its non-null values match.
 RULE_PATTERNS = {
@@ -68,6 +80,8 @@ RULE_PATTERNS = {
     "timestamp": TIMESTAMP_PATTERN,
 }
 RULES = tuple(RULE_PATTERNS)
+# Saved with the running totals, so changing a rule re-profiles history on the next run.
+RULE_FINGERPRINT = hashlib.sha256("\n".join(f"{rule}={pattern}" for rule, pattern in RULE_PATTERNS.items()).encode()).hexdigest()[:16]
 
 THRESHOLD_NUMERATOR = 999
 THRESHOLD_DENOMINATOR = 1000
@@ -83,7 +97,7 @@ def is_always_string(column):
 
 
 def decide_type(column, non_null, matches):
-    if is_always_string(column) or non_null == 0:
+    if is_always_string(column) or non_null <= 0:
         return "string"
     for rule in RULES:
         if matches[rule] * THRESHOLD_DENOMINATOR >= THRESHOLD_NUMERATOR * non_null:
@@ -94,25 +108,36 @@ def decide_type(column, non_null, matches):
 def merge_totals(previous, increment):
     merged = dict(previous)
     for column, stats in increment.items():
-        base = merged.get(column, ColumnStats(0, dict.fromkeys(RULES, 0)))
-        merged[column] = ColumnStats(
-            base.non_null + stats.non_null,
-            {rule: base.matches[rule] + stats.matches[rule] for rule in RULES},
-        )
+        merged[column] = _combined(merged.get(column, ColumnStats(0, dict.fromkeys(RULES, 0))), stats, operator.add)
     return merged
+
+
+def subtract_totals(previous, removed):
+    return {
+        column: _combined(stats, removed[column], operator.sub) if column in removed else stats
+        for column, stats in previous.items()
+    }
+
+
+def _combined(base, stats, op):
+    return ColumnStats(
+        op(base.non_null, stats.non_null),
+        {rule: op(base.matches[rule], stats.matches[rule]) for rule in RULES},
+    )
 
 
 def changed_decisions(current, decided):
     return {c: (current[c], decided[c]) for c in decided if c in current and current[c] != decided[c]}
 
 
-def rebuild_needed(changed, raw_exists, silver_exists, replaced):
-    return bool(changed) or not raw_exists or not silver_exists or replaced > 0
+def rebuild_needed(changed, raw_rows, current):
+    return bool(changed) or not raw_rows or SOURCE_KEY_COLUMN not in current
 
 
 # ---- transforms: raw CSV rows to typed rows ----
 
-ISO_TO_CANONICAL = r"^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(\.\d{1,6})?\d*Z$"
+ISO_TO_WALL_CLOCK = r"^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(\.\d{1,6})?\d*" + ZONE_SUFFIX
+UTC_OFFSET = r"([+-])(\d{2}):(\d{2})" + OPTIONAL_ZONE_ID
 
 
 def normalize_columns(df):
@@ -160,6 +185,35 @@ def invalid_keys(df, raw_location, limit=5):
     return [r[0] for r in rows]
 
 
+def _bucket_and_prefix(raw_location):
+    match = re.match(r"^s3://([^/]+)/(.*)$", raw_location)
+    if match is None or not raw_location.endswith("/"):
+        raise ValueError(f"raw_location must look like s3://bucket/prefix/ with a trailing slash: {raw_location!r}")
+    return match.group(1), match.group(2)
+
+
+def list_csv_keys(s3, raw_location, modified_after, modified_before):
+    bucket, prefix = _bucket_and_prefix(raw_location)
+    keys = set()
+    for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            if obj["Key"].endswith(".csv") and modified_after <= obj["LastModified"] < modified_before:
+                keys.add(f"s3://{bucket}/{obj['Key']}")
+    return keys
+
+
+def unknown_keys(listed, known, delivered, raw_location):
+    stored = known | delivered
+    if stored and not any(key.startswith(raw_location) for key in stored):
+        raise RuntimeError(f"stored source keys do not start with {raw_location!r}, e.g. {min(stored)!r}; "
+                           "the listing and the reader disagree on the key form")
+    return sorted(listed - stored)
+
+
+def union_by_name(frames):
+    return reduce(lambda a, b: a.unionByName(b, allowMissingColumns=True), frames)
+
+
 def nullify_empty(df):
     return df.select(*[F.when(F.col(c) == "", None).otherwise(F.col(c)).alias(c) for c in df.columns])
 
@@ -179,6 +233,15 @@ def profile(df, columns):
     }
 
 
+def _utc(col):
+    """Parse the wall-clock part and subtract the offset, so the stored value is UTC."""
+    wall = F.to_timestamp_ntz(F.regexp_replace(col, ISO_TO_WALL_CLOCK, "$1 $2$3"))
+    sign = F.when(F.regexp_extract(col, UTC_OFFSET, 1) == "-", -1).otherwise(1)
+    hours = F.coalesce(F.regexp_extract(col, UTC_OFFSET, 2).cast("int"), F.lit(0)) * sign
+    minutes = F.coalesce(F.regexp_extract(col, UTC_OFFSET, 3).cast("int"), F.lit(0)) * sign
+    return wall - F.make_dt_interval(F.lit(0), hours, minutes)
+
+
 def _typed(col, rule):
     if rule == "boolean":
         return F.when(col.rlike(BOOLEAN_PATTERN), col == "true")
@@ -187,8 +250,7 @@ def _typed(col, rule):
     if rule == "double":
         return F.when(col.rlike(DOUBLE_PATTERN), col.cast("double"))
     if rule == "timestamp":
-        canonical = F.regexp_replace(col, ISO_TO_CANONICAL, "$1 $2$3")
-        return F.when(col.rlike(TIMESTAMP_PATTERN), F.to_timestamp_ntz(canonical))
+        return F.when(col.rlike(TIMESTAMP_PATTERN), _utc(col))
 
 
 def apply_types(df, decided):
@@ -215,6 +277,18 @@ def current_types(schema):
 
 TYPING_COLUMNS = ("column_name", "non_null") + tuple(f"matches_{rule}" for rule in RULES) + ("decided",)
 KEYS_VIEW = "incoming_keys"
+RAW_ROWS_PROPERTY = "raw-rows"
+RULES_PROPERTY = "rules"
+
+
+def snapshot_rows(spark, table):
+    if not spark.catalog.tableExists(table):
+        return None
+    rows = spark.sql(
+        f"SELECT summary['total-records'] AS total FROM {table}.snapshots "
+        "ORDER BY committed_at DESC LIMIT 1"
+    ).collect()
+    return int(rows[0]["total"]) if rows else None
 
 
 def _clustered(df):
@@ -241,12 +315,12 @@ def append_rows(df, table):
     _clustered(df).writeTo(table).option("mergeSchema", "true").option("check-ordering", "false").append()
 
 
-def rows_with_keys(spark, table, keys):
+def rows_for_keys(spark, table, keys):
     keys.createOrReplaceTempView(KEYS_VIEW)
     return spark.sql(
-        f"SELECT count(*) AS n FROM {table} "
+        f"SELECT * FROM {table} "
         f"WHERE {SOURCE_KEY_COLUMN} IN (SELECT {SOURCE_KEY_COLUMN} FROM {KEYS_VIEW})"
-    ).first()["n"]
+    )
 
 
 def delete_keys(spark, table, keys):
@@ -271,7 +345,7 @@ def _identifier(table):
     return table.removeprefix("glue_catalog.")
 
 
-def save_totals(spark, table, location, totals, decided):
+def save_totals(spark, table, location, totals, decided, raw_rows):
     rows = [
         (column, stats.non_null, *[stats.matches[rule] for rule in RULES], decided[column])
         for column, stats in sorted(totals.items())
@@ -282,12 +356,19 @@ def save_totals(spark, table, location, totals, decided):
         .using("iceberg")
         .tableProperty("format-version", "2")
         .tableProperty("location", location)
+        .tableProperty(RAW_ROWS_PROPERTY, str(raw_rows))
+        .tableProperty(RULES_PROPERTY, RULE_FINGERPRINT)
         .createOrReplace()
     )
 
 
-def load_totals(spark, table):
-    if not spark.catalog.tableExists(table):
+def load_totals(spark, table, raw_rows):
+    """The saved totals, or nothing when they were counted against a different
+    traces_raw (a run failed between the two writes) or under different rules."""
+    if snapshot_rows(spark, table) is None:
+        return {}
+    properties = {r["key"]: r["value"] for r in spark.sql(f"SHOW TBLPROPERTIES {table}").collect()}
+    if properties.get(RAW_ROWS_PROPERTY) != str(raw_rows) or properties.get(RULES_PROPERTY) != RULE_FINGERPRINT:
         return {}
     return {
         r["column_name"]: ColumnStats(r["non_null"], {rule: r[f"matches_{rule}"] for rule in RULES})
@@ -310,12 +391,13 @@ def iceberg_conf(warehouse):
     )
 
 
-def read_csv(glue, raw_location):
-    """Read the CSV objects the job bookmark has not seen yet, each by its own header."""
+def read_csv(glue, paths, context):
+    """Read CSV objects, each by its own header. With a context, the job bookmark limits
+    the read to objects it has not seen yet; with none, every path is read."""
     dyf = glue.create_dynamic_frame.from_options(
         connection_type="s3",
         connection_options={
-            "paths": [raw_location],
+            "paths": paths,
             "recurse": True,
             "groupFiles": "inPartition",
             "groupSize": GROUP_SIZE_BYTES,
@@ -323,7 +405,7 @@ def read_csv(glue, raw_location):
         },
         format="csv",
         format_options={"withHeader": True, "multiLine": True},
-        transformation_ctx=f"raw_csv:{raw_location}",  # the bookmark is keyed on this
+        transformation_ctx=context,
     )
     return dyf.toDF()
 
@@ -351,13 +433,32 @@ def main():
     job.init(args["JOB_NAME"], args)
     spark.sql(f"CREATE DATABASE IF NOT EXISTS glue_catalog.{args['database']}")
 
-    incoming = read_csv(glue, raw_location)
-
-    raw_exists = spark.catalog.tableExists(raw)
-    silver_exists = spark.catalog.tableExists(silver)
-    ingested = 0
+    run_started = datetime.datetime.now(datetime.timezone.utc)
+    incoming = read_csv(glue, [raw_location], f"raw_csv:{raw_location}")
     if incoming.columns:
-        increment = nullify_empty(with_partition_columns(normalize_columns(incoming), raw_location))
+        incoming = incoming.persist(StorageLevel.MEMORY_AND_DISK)
+
+    raw_rows = snapshot_rows(spark, raw) or 0
+    silver_rows = snapshot_rows(spark, silver) or 0
+    frames = [normalize_columns(incoming)] if incoming.columns else []
+    late = []
+    if raw_rows:
+        # The window ends where Glue's own bookmark band begins, so the two never overlap.
+        s3 = boto3.client("s3", config=Config(retries={"max_attempts": 10, "mode": "adaptive"}))
+        listed = list_csv_keys(s3, raw_location, run_started - RECONCILE_LOOKBACK, run_started - GLUE_BOOKMARK_GRACE_PERIOD)
+        known = {r[0] for r in spark.table(raw).select(SOURCE_KEY_COLUMN).distinct().collect()}
+        delivered = {r[0] for r in incoming.select(SOURCE_KEY_COLUMN).distinct().collect()} if incoming.columns else set()
+        late = unknown_keys(listed, known, delivered, raw_location)
+        if late:
+            LOG.info("%d object(s) under %s found by key reconciliation", len(late), raw_location)
+            reconciled = read_csv(glue, late, "")
+            if reconciled.columns:
+                frames.append(normalize_columns(reconciled))
+            else:
+                LOG.warning("none of the %d reconciled object(s) under %s carried a header", len(late), raw_location)
+    ingested = 0
+    if frames:
+        increment = nullify_empty(with_partition_columns(union_by_name(frames), raw_location))
         increment = increment.persist(StorageLevel.MEMORY_AND_DISK)
         bad = invalid_keys(increment, raw_location)
         if bad:
@@ -365,8 +466,13 @@ def main():
             raise RuntimeError(f"object(s) outside the trace layout under {raw_location}: {bad} "
                                "(None means no file name was attached)")
         ingested = increment.count()
+        if incoming.columns:
+            incoming.unpersist()
+        if late:
+            with_rows = increment.filter(increment[SOURCE_KEY_COLUMN].isin(late)).select(SOURCE_KEY_COLUMN).distinct().count()
+            LOG.info("%d of %d reconciled object(s) carried rows", with_rows, len(late))
     if not ingested:
-        if not raw_exists:
+        if not raw_rows:
             raise RuntimeError(f"no trace rows read under {raw_location}")
         LOG.info("no new rows under %s", raw_location)
         job.commit()
@@ -376,45 +482,48 @@ def main():
     stats = profile(increment, columns)
 
     keys = increment.select(SOURCE_KEY_COLUMN).distinct()
-    current = current_types(spark.table(silver).schema) if silver_exists else {}
+    current = current_types(spark.table(silver).schema) if silver_rows else {}
+    previous = load_totals(spark, typing, raw_rows) if raw_rows else {}
     replaced = 0
-    if raw_exists:
-        replaced = rows_with_keys(spark, raw, keys)
+    if raw_rows:
+        stale = rows_for_keys(spark, raw, keys)
+        replaced = stale.count()
         if replaced:
             LOG.warning("%d row(s) of already ingested objects were replaced", replaced)
+            if previous:
+                previous = subtract_totals(previous, profile(stale, data_columns(stale)))
             delete_keys(spark, raw, keys)
         append_rows(increment, raw)
     else:
         replace_table(increment, raw, location(RAW_TABLE))
 
-    # Running totals cover every raw row. Replaced rows can't be subtracted from them,
-    # so after a replace (or with no totals yet) they are recounted from traces_raw.
-    previous = {} if not raw_exists or replaced else load_totals(spark, typing)
     if previous:
         totals = merge_totals(previous, stats)
     else:
-        if raw_exists and not replaced:
-            LOG.warning("%s has no totals; profiling %s from history", typing, raw)
+        if raw_rows:
+            LOG.warning("%s has no totals matching %s; profiling from history", typing, raw)
         history = spark.table(raw)
         totals = profile(history, data_columns(history))
     decided = {c: decide_type(c, s.non_null, s.matches) for c, s in totals.items()}
-    save_totals(spark, typing, location(TYPING_TABLE), totals, decided)
+    save_totals(spark, typing, location(TYPING_TABLE), totals, decided, snapshot_rows(spark, raw))
 
     changed = changed_decisions(current, decided)
     for column, (old, new) in sorted(changed.items()):
         LOG.info("column %s changes from %s to %s", column, old, new)
-    rebuild = rebuild_needed(changed, raw_exists, silver_exists, replaced)
+    rebuild = rebuild_needed(changed, raw_rows, current)
 
     if rebuild:
-        history = apply_types(spark.table(raw).drop(SOURCE_KEY_COLUMN), decided)
-        replace_table(history, silver, location(TARGET_TABLE))
+        replace_table(apply_types(spark.table(raw), decided), silver, location(TARGET_TABLE))
     else:
-        append_rows(apply_types(increment.drop(SOURCE_KEY_COLUMN), decided), silver)
+        delete_keys(spark, silver, keys)
+        append_rows(apply_types(increment, decided), silver)
     increment.unpersist()
-    LOG.info("%s %s: %d rows ingested", "rebuilt" if rebuild else "appended", silver, ingested)
+    written = snapshot_rows(spark, silver)
+    LOG.info("%s %s: %d rows ingested, %d rows total (previous %d)",
+             "rebuilt" if rebuild else "appended", silver, ingested, written, silver_rows)
 
-    # Advance the bookmark only once every table is written. If the job fails before
-    # this, the next run re-reads the same objects and they replace their own rows.
+    # Every table is written before the bookmark advances, so a run that fails earlier
+    # is safe to rerun: the same objects are read again and replace their own rows.
     job.commit()
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
     for table in (silver, raw, typing):

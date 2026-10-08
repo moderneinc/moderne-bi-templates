@@ -7,16 +7,17 @@
 Each run:
 
 1. **Reads only new objects.** A Glue [job bookmark](https://docs.aws.amazon.com/glue/latest/dg/monitor-continuations.html) remembers which CSV objects earlier runs read, so a normal night reads just that day's uploads, however much history the bucket holds. Each object is read by its own header, so every command type's columns land by name.
-2. **Keeps every raw row in `traces_raw`.** New rows are appended, all as strings, to an Iceberg table. An object that is delivered again replaces its earlier rows, and a late upload lands in the day its key names, so there is no backfill step.
-3. **Decides each column's type from all its history.** Each column gets one type (`boolean`, `bigint`, `double`, `timestamp`, or `string`): the first type that at least 99.9% of its non-null values match. Partition keys, `*id` columns, and `tag_*` columns always stay strings. Running per-column counts in a small `traces_typing` table mean each night only the new rows are counted.
-4. **Appends to `traces`, rebuilding only when it must.** On a normal night the new rows are typed and appended, and a new field is added as a column. The job rebuilds `traces` from `traces_raw` only on the first run, when a column's type changes (say, a text value turns up in a column that was all numbers), or when a file was delivered again. A value that doesn't match its column's type becomes `NULL`.
-5. **Maintains the tables.** It expires snapshots older than a day and compacts the small files nightly appends leave.
+2. **Catches late replicas.** S3 replication keeps the source's last-modified time, so a replica that lands after a run has started looks older than that run, and the bookmark alone would skip it. So each run also lists the objects modified in the last three days and reads any that `traces_raw` doesn't have.
+3. **Keeps every raw row in `traces_raw`.** New rows are appended, all as strings, to an Iceberg table. An object that is delivered again replaces its earlier rows, and a late upload lands in the day its key names.
+4. **Decides each column's type from all its history.** Each column gets one type (`boolean`, `bigint`, `double`, `timestamp`, or `string`): the first type that at least 99.9% of its non-null values match. Partition keys, `*id` columns, and `tag_*` columns always stay strings. Timestamps may end in `Z` or an offset, with or without a zone id (`2026-06-10T21:50:25Z[Etc/UTC]`, `2026-06-10T16:50:25-05:00[America/Chicago]`), and are stored in UTC. Running per-column counts in a small `traces_typing` table mean each night only the new rows are counted. The counts are saved with a fingerprint of the rules, so if you change a rule, the next run that ingests rows recounts from `traces_raw`.
+5. **Appends to `traces`, rebuilding only when it must.** On a normal night the new rows are typed and appended, and a new field is added as a column. A file that was delivered again has its rows replaced in place; `traces` keeps a `_source_key` column naming the object each row came from, which is what makes that possible. The job rebuilds `traces` from `traces_raw` only on the first run or when a column's type changes (say, a text value turns up in a column that was all numbers). A value that doesn't match its column's type becomes `NULL`.
+6. **Maintains the tables.** It expires snapshots older than a day and compacts the small files nightly appends leave.
 
 So a normal night costs time in proportion to that night's uploads, not to your history. Only the occasional rebuild reads everything, and it reads compact Parquet from `traces_raw`, not the CSV.
 
 Column names are the CSV headers lowercased (`runStartTime` → `runstarttime`, `tag.team` → `tag_team`), which is how Athena exposes them anyway. **A new trace field becomes a typed, queryable column on the next run** with no DDL to edit. The job creates the database and all three tables in the Glue Data Catalog itself, so there is no DDL to run.
 
-If the job fails partway, the bookmark does not advance, so the next run reads the same objects again. They count as delivered again, so the job replaces their rows and rebuilds, and nothing is doubled.
+If the job fails partway, the bookmark does not advance, so the next run reads the same objects again. They count as delivered again, so the job replaces their rows, and nothing is doubled.
 
 ## Setup
 
@@ -71,7 +72,7 @@ aws glue create-trigger --name moderne-build-traces-nightly --type SCHEDULED \
     --actions JobName=moderne-build-traces
 ```
 
-To start over from scratch (for example after changing the typing rules), reset the bookmark with `aws glue reset-job-bookmark --job-name moderne-build-traces` and drop the three tables before the next run.
+If replication into your bucket is interrupted for more than three days, reset the bookmark with `aws glue reset-job-bookmark --job-name moderne-build-traces`. The next run reads the whole bucket again and replaces each object's rows, so nothing is doubled. To start over from scratch, also drop the three tables before that run.
 
 ## Making it production-grade
 
