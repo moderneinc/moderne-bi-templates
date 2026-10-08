@@ -42,7 +42,7 @@ All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than q
 
 ## Prerequisites
 
-- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary — the repo sets no convention for it, so use whichever one you created in [step 3 of the Athena setup](../../data-layer/athena/README.md#3-create-an-athena-workgroup).
+- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary — the repo sets no convention for it, so use whichever one you created in [step 2 of the Athena setup](../../data-layer/athena/README.md#2-create-an-athena-workgroup).
 - A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's Glue job](../../data-layer/athena/glue/) creates — so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
 - **QuickSight permission to create SPICE datasets**, plus enough SPICE capacity for 13 datasets. The importing principal needs `quicksight:StartAssetBundleImportJob` and create permissions on analyses, datasets, and data sources.
 
@@ -69,7 +69,7 @@ From this directory, replace the account ID and region everywhere they appear (1
 grep -rl '<AWS_ACCOUNT_ID>\|<REGION>' analysis dataset datasource | xargs sed -i.bak -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" -e "s/<REGION>/$REGION/g" && find . -name '*.bak' -delete
 ```
 
-The data layer's DDL names the database `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
+The data layer's Glue job creates whichever database its `--database` argument names. The walkthrough uses `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
 
 ```bash
 grep -rl moderne_telemetry dataset | xargs sed -i.bak -e 's/moderne_telemetry\.traces/my_schema.traces/g' -e 's/"schema": "moderne_telemetry"/"schema": "my_schema"/g' && find . -name '*.bak' -delete
