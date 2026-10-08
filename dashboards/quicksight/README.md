@@ -34,7 +34,7 @@ Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report 
 | Top Recipes with Commits | bar "Top Recipes with Commits" | `Top Recipes with Commits` | [Top Recipes with Commits](../../reports/top-recipes-with-commits/) |
 | Top Users | bar "Top Users" | `Top Users` | [Top Users](../../reports/top-users/) |
 
-A thirteenth dataset, **`traces`**, is a direct relational table over `moderne_telemetry.traces` (all 98 columns). It is declared in the analysis but no visual uses it — it's there as a starting point for building your own sheets against the raw table.
+A thirteenth dataset, **`traces`**, is a direct relational table over `moderne_telemetry.traces` (98 columns). It is declared in the analysis but no visual uses it — it's there as a starting point for building your own sheets against the raw table.
 
 Other analysis-level details: NITRO theme, `LENIENT` validation, no parameters, no filter groups, and one calculated field — `Built Tool + Version` on the `Build Tool Versions` dataset, defined as `concat({Build Tool}, ' ', {Tool Version})`.
 
@@ -50,7 +50,7 @@ The 12 custom-SQL datasets read 22 columns from `traces`:
 
 `type`, `path`, `developer`, `runid`, `runrecipeid`, `runrecipeinstancename`, `runstarttime`, `runfileswithfixresults`, `runestimatedefforttimesavingsms`, `commitid`, `commitstarttime`, `commitoutcome`, `buildid`, `buildstarttime`, `buildoutcome`, `buildmavenversion`, `buildgradleversion`, `buildbazelversion`, `builddotnetversion`, `buildpythonversion`, `buildnodeversion`, `month`
 
-The `traces` table has 98 columns in total; the other 76 go unused by these datasets, though the raw `traces` dataset declares all of them. See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
+The raw `traces` dataset declares 98 columns; the other 76 go unused by these datasets. Your table can hold more than the bundle declares: the data layer adds a column for each new trace field, and the Athena example adds its own `_source_key` bookkeeping column. The bundle ignores any column it doesn't declare. See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
 
 ## Importing
 

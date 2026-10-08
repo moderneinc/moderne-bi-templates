@@ -15,8 +15,9 @@ Every report expects the same logical table, regardless of how you produce it:
 - One wide table, `traces`, the **union of every command stage's columns** (see the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv)).
 - Carries `tenant`, `source`, `type`, `year`, `month`, `day` columns, taken from the Hive-style keys the CLI and platform write to object storage. Filtering on them lets the engine skip data.
 - Keyed by command **`type`** (`run`, `commit`, `build`, and so on). A row whose type lacks a stage reads those columns as `NULL`.
-- Columns are **typed** (timestamps, counts, durations, rates, booleans), so queries need no casts.
+- Columns are **typed** (timestamps, counts, durations, rates, booleans), so queries need no casts. Timestamps are in UTC.
 - `tenant` is a partition column, but your export contains only your own tenant, so the reports don't filter on it.
+- A data layer may add bookkeeping columns of its own, named with a leading underscore. The Athena example adds `_source_key`, the object each row came from. These aren't trace fields: no report reads them, and another engine's data layer doesn't need to produce them.
 
 As long as your data layer produces that, the queries and visualizations in this repo are interchangeable across engines. If you produce something different, adapt the queries to match.
 
@@ -34,7 +35,12 @@ Each command **type** writes a different set of columns, and new trace fields ap
 raw CSV  ──►  traces_raw (every row, as strings)  ──►  traces (typed)  ──►  reports
 ```
 
-See [`athena/`](athena/) for a nightly AWS Glue job that does this.
+Two things about how objects arrive shape any data layer:
+
+- **An object can be delivered more than once.** Its rows need to replace the earlier copy's, not add to them.
+- **A replica can land late.** Replication keeps the source's last-modified time, so a late arrival can look older than objects you have already read. Anything that decides what is new by modification time alone will miss it.
+
+See [`athena/`](athena/) for a nightly AWS Glue job that handles both.
 
 ## Adding another engine
 

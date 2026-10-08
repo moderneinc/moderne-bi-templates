@@ -6,8 +6,8 @@ An AWS Athena implementation of the [data layer](../): it turns the raw trace CS
 
 A nightly AWS Glue job ([`glue/`](glue/)) does all the work and owns three tables:
 
-1. **`traces_raw`** — an Iceberg table holding every row of every CSV object, as strings. Each night the job reads only the objects it hasn't seen before, each by its own header, and appends them.
-2. **`traces`** — an Iceberg table with the same rows, each column cast to the type its values support (timestamps, counts, durations, rates, booleans). The job appends each night's rows, replaces the rows of any file delivered again, and rebuilds it from `traces_raw` only when a column's type changes. It also carries a `_source_key` column naming the object each row came from. This is the table the reports read.
+1. **`traces_raw`** — an Iceberg table holding every row of every CSV object, as strings. Each night the job reads only the objects it hasn't seen before, plus any from the last three days that arrived late, each by its own header, and appends them.
+2. **`traces`** — an Iceberg table with the same rows, each column cast to the type its values support (timestamps, counts, durations, rates, booleans). The job appends each night's rows, replaces the rows of any file delivered again, and rebuilds it from `traces_raw` only when a column's type changes. It also carries a `_source_key` column naming the object each row came from, which is the job's bookkeeping rather than a trace field (see the [table contract](../README.md#what-the-reports-expect)). This is the table the reports read.
 3. **`traces_typing`** — a small table of per-column value counts, so the job can decide types without re-reading history.
 
 ```
