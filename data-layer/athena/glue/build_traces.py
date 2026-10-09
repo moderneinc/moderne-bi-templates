@@ -1,25 +1,6 @@
 """Nightly AWS Glue job that builds the typed `traces` table from raw trace CSV.
 
-Each run:
-
-1. Reads only the raw CSV objects it has not seen before (Glue job bookmarks), each by
-   its own header, so every command type's column set lands by name and a new trace
-   field needs no DDL change.
-2. Also reads any object from the last three days that `traces_raw` doesn't have.
-   S3 replication keeps the source's last-modified time, so a replica that lands after
-   a run has started looks older than that run and the bookmark alone would skip it.
-3. Appends those rows, all as strings, to the Iceberg table `traces_raw`. An object
-   that is delivered again replaces its earlier rows.
-4. Gives each column one type (boolean, bigint, double, timestamp, or string) decided
-   from every value it has ever held. Running per-column counts in `traces_typing` mean
-   only the new (and replaced) rows are scanned to update those decisions.
-5. Appends the new rows, typed, to the Iceberg table `traces`, replacing the rows of
-   any object delivered again. It rebuilds `traces` from `traces_raw` only on the first
-   run or when a column's type changes. Values that don't match their column's type
-   become NULL.
-6. Expires old Iceberg snapshots and compacts the small files nightly appends leave.
-
-This is a minimal example for a single tenant's export, with no metrics or alarms.
+This is a minimal example with no metrics or alarms.
 """
 
 import datetime

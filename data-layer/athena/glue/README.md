@@ -1,6 +1,6 @@
 # Glue job: raw CSV → typed Iceberg `traces`
 
-[`build_traces.py`](build_traces.py) is a nightly AWS Glue (Spark) job that turns the raw trace CSV into the typed `traces` table the reports read. Read it top to bottom; the module docstring explains the design.
+[`build_traces.py`](build_traces.py) is a nightly AWS Glue (Spark) job that turns the raw trace CSV into the typed `traces` table the reports read.
 
 ## What it does
 
@@ -9,7 +9,7 @@ Each run:
 1. **Reads only new objects.** A Glue [job bookmark](https://docs.aws.amazon.com/glue/latest/dg/monitor-continuations.html) remembers which CSV objects earlier runs read, so a normal night reads just that day's uploads, however much history the bucket holds. Each object is read by its own header, so every command type's columns land by name.
 2. **Catches late replicas.** S3 replication keeps the source's last-modified time, so a replica that lands after a run has started looks older than that run, and the bookmark alone would skip it. So each run also lists the objects modified in the last three days and reads any that `traces_raw` doesn't have.
 3. **Keeps every raw row in `traces_raw`.** New rows are appended, all as strings, to an Iceberg table. An object that is delivered again replaces its earlier rows, and a late upload lands in the day its key names.
-4. **Decides each column's type from all its history.** Each column gets one type (`boolean`, `bigint`, `double`, `timestamp`, or `string`): the first type that at least 99.9% of its non-null values match. Partition keys, `*id` columns, and `tag_*` columns always stay strings. Timestamps may end in `Z` or an offset, with or without a zone id (`2026-06-10T21:50:25Z[Etc/UTC]`, `2026-06-10T16:50:25-05:00[America/Chicago]`), and are stored in UTC. Running per-column counts in a small `traces_typing` table mean each night only the new rows are counted. The counts are saved with a fingerprint of the rules, so if you change a rule, the next run that ingests rows recounts from `traces_raw`.
+4. **Decides each column's type from all its history.** Each column gets one type (`boolean`, `bigint`, `double`, `timestamp`, or `string`): the first type that at least 99.9% of its non-null values match. Partition keys, `*id` columns, and `tag_*` columns always stay strings. Timestamps may end in `Z` or an offset, with or without a zone id (`2026-06-10T21:50:25Z[Etc/UTC]`, `2026-06-10T16:50:25-05:00[America/Chicago]`), and are stored in UTC. Running per-column counts in a small `traces_typing` table mean each night only the new and replaced rows are counted. The counts are saved with a fingerprint of the rules, so if you change a rule, the next run that ingests rows recounts from `traces_raw`.
 5. **Appends to `traces`, rebuilding only when it must.** On a normal night the new rows are typed and appended, and a new field is added as a column. A file that was delivered again has its rows replaced in place; `traces` keeps a `_source_key` column naming the object each row came from, which is what makes that possible. It is the job's bookkeeping, not a trace field, and no report reads it. The job rebuilds `traces` from `traces_raw` only on the first run or when a column's type changes. One stray value doesn't do that: a column changes type only once fewer than 99.9% of all the values it has ever held match it. Short of that, a value that doesn't match its column's type just becomes `NULL`.
 6. **Maintains the tables.** It expires snapshots older than a day and compacts the small files nightly appends leave.
 
@@ -76,7 +76,7 @@ If replication into your bucket is interrupted for more than three days, reset t
 
 ## Making it production-grade
 
-This example is deliberately minimal. Nothing here is Moderne-specific; it is stock Glue, Iceberg, and S3, so add what your environment needs. For example:
+This example is deliberately minimal, with no metrics or alarms. Nothing here is Moderne-specific; it is stock Glue, Iceberg, and S3, so add what your environment needs. For example:
 
 - **Alerting.** An EventBridge rule on Glue *Job State Change* events for `FAILED` or `TIMEOUT`, or CloudWatch metrics emitted from the job (rows ingested, run duration) with alarms on a night that ingested nothing.
 - **Managed table maintenance.** The Glue Data Catalog can compact Iceberg tables and expire their snapshots for you, in place of the calls at the end of the script.
