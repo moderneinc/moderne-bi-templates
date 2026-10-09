@@ -1,6 +1,6 @@
 # Convenience views (optional)
 
-Optional views over [`traces`](../ddl/03-create-traces-table.sql). **No report depends on them** — every query in [`../../../reports`](../../../reports) reads `traces` directly and carries its own `type` scoping and casts, so it stays self-contained.
+Optional views over [`traces`](../glue/). **No report depends on them**: every query in [`../../../reports`](../../../reports) reads `traces` directly and carries its own `type` scoping and casts, so it stays self-contained.
 
 These exist for one case: you would rather point a BI tool (or an ad-hoc query) at a pre-scoped, renamed surface than restate that logic in every dataset. They encapsulate:
 
@@ -24,7 +24,7 @@ These exist for one case: you would rather point a BI tool (or an ad-hoc query) 
 
 ## Setup
 
-The views are independent, so create only the ones you want, with your database selected as the Athena query context (see [`../ddl/01-create-database.sql`](../ddl/01-create-database.sql)).
+The views are independent, so create only the ones you want, with your database selected as the Athena query context (`USE moderne_telemetry;`).
 
 ## Or build the same thing in your BI tool
 

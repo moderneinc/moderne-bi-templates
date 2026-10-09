@@ -34,7 +34,7 @@ Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report 
 | Top Recipes with Commits | bar "Top Recipes with Commits" | `Top Recipes with Commits` | [Top Recipes with Commits](../../reports/top-recipes-with-commits/) |
 | Top Users | bar "Top Users" | `Top Users` | [Top Users](../../reports/top-users/) |
 
-A thirteenth dataset, **`traces`**, is a direct relational table over `moderne_telemetry.traces` (all 98 columns). It is declared in the analysis but no visual uses it — it's there as a starting point for building your own sheets against the raw table.
+A thirteenth dataset, **`traces`**, is a direct relational table over `moderne_telemetry.traces` (98 columns). It is declared in the analysis but no visual uses it. It's there as a starting point for building your own sheets against the raw table.
 
 Other analysis-level details: NITRO theme, `LENIENT` validation, no parameters, no filter groups, and one calculated field — `Built Tool + Version` on the `Build Tool Versions` dataset, defined as `concat({Build Tool}, ' ', {Tool Version})`.
 
@@ -42,15 +42,15 @@ All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than q
 
 ## Prerequisites
 
-- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary — the repo sets no convention for it, so use whichever one you created in [step 3 of the Athena setup](../../data-layer/athena/README.md#3-create-an-athena-workgroup).
-- A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's DDL](../../data-layer/athena/ddl/01-create-database.sql) creates — so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
+- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary. The repo sets no convention for it, so use whichever one you created in [step 2 of the Athena setup](../../data-layer/athena/README.md#2-create-an-athena-workgroup).
+- A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's Glue job](../../data-layer/athena/glue/) creates, so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
 - **QuickSight permission to create SPICE datasets**, plus enough SPICE capacity for 13 datasets. The importing principal needs `quicksight:StartAssetBundleImportJob` and create permissions on analyses, datasets, and data sources.
 
 The 12 custom-SQL datasets read 22 columns from `traces`:
 
 `type`, `path`, `developer`, `runid`, `runrecipeid`, `runrecipeinstancename`, `runstarttime`, `runfileswithfixresults`, `runestimatedefforttimesavingsms`, `commitid`, `commitstarttime`, `commitoutcome`, `buildid`, `buildstarttime`, `buildoutcome`, `buildmavenversion`, `buildgradleversion`, `buildbazelversion`, `builddotnetversion`, `buildpythonversion`, `buildnodeversion`, `month`
 
-The `traces` table has 98 columns in total; the other 76 go unused by these datasets, though the raw `traces` dataset declares all of them. See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
+The raw `traces` dataset declares 98 columns; the other 76 go unused by these datasets. Your table can hold more than the bundle declares: the data layer adds a column for each new trace field, and the Athena example adds its own `_source_key` bookkeeping column. The bundle ignores any column it doesn't declare. The reverse is not true: a dataset fails to ingest if it names a column your table doesn't have yet, which happens when your export has never held a trace of that command type (see the [Athena data layer](../../data-layer/athena/README.md#3-query)). See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
 
 ## Importing
 
@@ -69,7 +69,7 @@ From this directory, replace the account ID and region everywhere they appear (1
 grep -rl '<AWS_ACCOUNT_ID>\|<REGION>' analysis dataset datasource | xargs sed -i.bak -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" -e "s/<REGION>/$REGION/g" && find . -name '*.bak' -delete
 ```
 
-The data layer's DDL names the database `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
+The data layer's Glue job creates whichever database its `--database` argument names. The walkthrough uses `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
 
 ```bash
 grep -rl moderne_telemetry dataset | xargs sed -i.bak -e 's/moderne_telemetry\.traces/my_schema.traces/g' -e 's/"schema": "moderne_telemetry"/"schema": "my_schema"/g' && find . -name '*.bak' -delete
@@ -161,7 +161,7 @@ aws quicksight create-refresh-schedule \
   }'
 ```
 
-Daily suits a daily compaction job. Refreshing more often than the data layer lands new partitions just re-scans Athena for the same rows.
+Daily suits the nightly data-layer job. Refreshing more often than the data layer lands new partitions just re-scans Athena for the same rows.
 
 ### 3. Share it
 
@@ -182,7 +182,7 @@ To hand this to people who shouldn't edit it, publish a read-only dashboard from
 
 ### Optional: switch to DIRECT_QUERY
 
-SPICE is the deliberate default here. These queries carry no date filter by design, so under DIRECT_QUERY every visual interaction re-scans every registered partition in Athena, where cost tracks bytes scanned — ten sheets of that adds up fast. SPICE confines Athena reads to refresh time, which is bounded and predictable, at the cost of showing a snapshot.
+SPICE is the deliberate default here. These queries carry no date filter by design, so under DIRECT_QUERY every visual interaction re-scans every partition in Athena, where cost tracks bytes scanned, and ten sheets of that adds up fast. SPICE confines Athena reads to refresh time, which is bounded and predictable, at the cost of showing a snapshot.
 
 If you want live data anyway, change `"importMode": "SPICE"` to `"importMode": "DIRECT_QUERY"` in each dataset **before** importing, and bound the scans by adding a partition predicate (`AND year = '2026'`) to each `sqlQuery`. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
 
