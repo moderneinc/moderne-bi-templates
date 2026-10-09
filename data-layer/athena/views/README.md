@@ -1,6 +1,6 @@
 # Convenience views (optional)
 
-Optional views over [`traces`](../glue/). **No report depends on them** — every query in [`../../../reports`](../../../reports) reads `traces` directly and carries its own `type` scoping and casts, so it stays self-contained.
+Optional views over [`traces`](../glue/). **No report depends on them**: every query in [`../../../reports`](../../../reports) reads `traces` directly and carries its own `type` scoping and casts, so it stays self-contained.
 
 These exist for one case: you would rather point a BI tool (or an ad-hoc query) at a pre-scoped, renamed surface than restate that logic in every dataset. They encapsulate:
 

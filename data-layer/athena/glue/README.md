@@ -1,4 +1,4 @@
-# Glue job — raw CSV → typed Iceberg `traces`
+# Glue job: raw CSV → typed Iceberg `traces`
 
 [`build_traces.py`](build_traces.py) is a nightly AWS Glue (Spark) job that turns the raw trace CSV into the typed `traces` table the reports read. Read it top to bottom; the module docstring explains the design.
 

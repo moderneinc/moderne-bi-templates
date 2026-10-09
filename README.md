@@ -23,7 +23,7 @@ Every query and visualization here expects the same logical table, however you p
 - One wide table, **`traces`**, the union of every command stage's columns (see the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv)).
 - Carries `tenant`, `source`, `type`, `year`, `month`, `day` columns, taken from each object's key.
 - Keyed by command **`type`** (`run`, `commit`, `build`, …); a row whose type lacks a stage reads those columns as `NULL`.
-- Columns are **typed** (timestamps, counts, durations, rates, booleans) — queries need no casts. Timestamps are in UTC.
+- Columns are **typed** (timestamps, counts, durations, rates, booleans), so queries need no casts. Timestamps are in UTC.
 - `tenant` is a partition column, but your export contains only your own tenant, so the reports don't filter on it.
 - A data layer may add bookkeeping columns of its own, named with a leading underscore (the Athena example adds `_source_key`). No report reads them.
 

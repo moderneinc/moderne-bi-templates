@@ -6,9 +6,9 @@ An AWS Athena implementation of the [data layer](../): it turns the raw trace CS
 
 A nightly AWS Glue job ([`glue/`](glue/)) does all the work and owns three tables:
 
-1. **`traces_raw`** — an Iceberg table holding every row of every CSV object, as strings. Each night the job reads only the objects it hasn't seen before, plus any from the last three days that arrived late, each by its own header, and appends them.
-2. **`traces`** — an Iceberg table with the same rows, each column cast to the type its values support (timestamps, counts, durations, rates, booleans). The job appends each night's rows, replaces the rows of any file delivered again, and rebuilds it from `traces_raw` only when a column's type changes. It also carries a `_source_key` column naming the object each row came from, which is the job's bookkeeping rather than a trace field (see the [table contract](../README.md#what-the-reports-expect)). This is the table the reports read.
-3. **`traces_typing`** — a small table of per-column value counts, so the job can decide types without re-reading history.
+1. **`traces_raw`**: an Iceberg table holding every row of every CSV object, as strings. Each night the job reads only the objects it hasn't seen before, plus any from the last three days that arrived late, each by its own header, and appends them.
+2. **`traces`**: an Iceberg table with the same rows, each column cast to the type its values support (timestamps, counts, durations, rates, booleans). The job appends each night's rows, replaces the rows of any file delivered again, and rebuilds it from `traces_raw` only when a column's type changes. It also carries a `_source_key` column naming the object each row came from, which is the job's bookkeeping rather than a trace field (see the [table contract](../README.md#what-the-reports-expect)). This is the table the reports read.
+3. **`traces_typing`**: a small table of per-column value counts, so the job can decide types without re-reading history.
 
 ```
 raw CSV  ──►  Glue job (bookmarked, reads new objects only)  ──►  traces_raw  ──►  traces  ──►  reports
@@ -36,7 +36,7 @@ The `athena-results/` prefix sits beside the table folders, so it won't interfer
 
 ### 3. Query
 
-The reports use **unqualified** table names (`FROM traces`), so make `moderne_telemetry` your Athena query context — pick it in the console's *Database* selector, or run `USE moderne_telemetry;` — first.
+The reports use **unqualified** table names (`FROM traces`), so make `moderne_telemetry` your Athena query context first, by picking it in the console's *Database* selector or running `USE moderne_telemetry;`.
 
 Run any report SQL in [`../../reports`](../../reports) as-is. Each one is self-contained: it scopes by command `type`, needs no casts (the columns are typed), and needs no tenant filter.
 
@@ -47,7 +47,7 @@ A report needs at least one trace of each command type it reads. The job adds a 
 Athena bills on **bytes scanned**, so a few rules keep queries cheap and fast:
 
 - **Filter a date on large datasets.** The reports ship without a date filter so they return all-time results; add `AND year = '2026'` (or a range) once you have enough history that a full scan is wasteful.
-- **Narrow `type`.** Restricting `type` to the command types a report needs skips whole partitions — every report here already does this.
+- **Narrow `type`.** Restricting `type` to the command types a report needs skips whole partitions. Every report here already does this.
 - **Read `traces`, not `traces_raw`.** Both are Parquet, but only `traces` is typed; `traces_raw` exists so the job can rebuild `traces`, not for querying.
 - **Check the query stats.** In the Athena console, compare *Data scanned* against total runtime to see whether you are scan-bound or planning-bound.
 
