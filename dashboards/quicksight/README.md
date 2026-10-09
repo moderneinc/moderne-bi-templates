@@ -50,7 +50,7 @@ The 12 custom-SQL datasets read 22 columns from `traces`:
 
 `type`, `path`, `developer`, `runid`, `runrecipeid`, `runrecipeinstancename`, `runstarttime`, `runfileswithfixresults`, `runestimatedefforttimesavingsms`, `commitid`, `commitstarttime`, `commitoutcome`, `buildid`, `buildstarttime`, `buildoutcome`, `buildmavenversion`, `buildgradleversion`, `buildbazelversion`, `builddotnetversion`, `buildpythonversion`, `buildnodeversion`, `month`
 
-The raw `traces` dataset declares 98 columns; the other 76 go unused by these datasets. Your table can hold more than the bundle declares: the data layer adds a column for each new trace field, and the Athena example adds its own `_source_key` bookkeeping column. The bundle ignores any column it doesn't declare. See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
+The raw `traces` dataset declares 98 columns; the other 76 go unused by these datasets. Your table can hold more than the bundle declares: the data layer adds a column for each new trace field, and the Athena example adds its own `_source_key` bookkeeping column. The bundle ignores any column it doesn't declare. The reverse is not true: a dataset fails to ingest if it names a column your table doesn't have yet, which happens when your export has never held a trace of that command type (see the [Athena data layer](../../data-layer/athena/README.md#3-query)). See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
 
 ## Importing
 

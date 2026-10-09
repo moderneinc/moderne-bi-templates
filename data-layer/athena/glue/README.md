@@ -15,6 +15,8 @@ Each run:
 
 Column names are the CSV headers lowercased (`runStartTime` → `runstarttime`, `tag.team` → `tag_team`), which is how Athena exposes them anyway. **A new trace field becomes a typed, queryable column on the next run** with no DDL to edit. The job creates the database and all three tables in the Glue Data Catalog itself, so there is no DDL to run.
 
+**A column exists only once some object has carried it.** If your export has never held a given command type (say, no `mod git commit` traces yet), `traces` has none of that type's columns, and a query that names one fails with a column-not-found error instead of returning no rows. The columns appear on the first run after such a trace arrives.
+
 The job is safe to rerun after a failure. Every table is written before the bookmark advances, so a run that fails before then reads the same objects again next time and replaces their rows, and nothing is doubled. Snapshot expiry and compaction run after the bookmark advances. A failure there shows the run as `FAILED`, but the tables are already complete, and the next run does the maintenance.
 
 ## Setup

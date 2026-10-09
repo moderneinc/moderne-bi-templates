@@ -40,6 +40,8 @@ The reports use **unqualified** table names (`FROM traces`), so make `moderne_te
 
 Run any report SQL in [`../../reports`](../../reports) as-is. Each one is self-contained: it scopes by command `type`, needs no casts (the columns are typed), and needs no tenant filter.
 
+A report needs at least one trace of each command type it reads. The job adds a column only once some trace has carried it, so if your export has never held, say, a `commit` trace, the `commit*` columns don't exist yet and a report that names them fails with a column-not-found error instead of returning no rows. It works once the first such trace has been through a nightly run.
+
 ## Performance
 
 Athena bills on **bytes scanned**, so a few rules keep queries cheap and fast:
