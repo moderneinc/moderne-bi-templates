@@ -17,6 +17,7 @@ SELECT
     commitoutcome,
     commitstarttime               AS commit_started,
     commitbranch,
+    commitsha,
     runid,
     runrecipeid                                           AS recipe_id,
     runrecipeinstancename                                 AS recipe_name,
