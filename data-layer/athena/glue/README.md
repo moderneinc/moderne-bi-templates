@@ -58,7 +58,7 @@ aws glue create-job --name moderne-build-traces \
     }'
 ```
 
-`--raw_location` must be the prefix directly above `tenant=` and end in `/`. The job fails on any CSV under it that doesn't follow the export layout, since that file's columns would otherwise join the table.
+`--raw_location` must be the prefix directly above `tenant=` and end in `/`. The job fails on any object under it that doesn't follow the export layout, since that file's columns would otherwise join the table.
 
 ### 4. Run it, then schedule it
 
