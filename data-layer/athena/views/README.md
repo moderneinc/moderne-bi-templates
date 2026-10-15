@@ -24,7 +24,7 @@ These exist for one case: you would rather point a BI tool (or an ad-hoc query) 
 
 ## Setup
 
-The views are independent, so create only the ones you want, with your database selected as the Athena query context (`USE moderne_telemetry;`).
+The views are independent, so create only the ones you want, with your database selected as the Athena query context (`USE moderne_telemetry;`). If a view fails with a column-not-found error, `traces` doesn't have those columns yet. The columns show up on the first nightly run after a trace that has the new columns.
 
 ## Or build the same thing in your BI tool
 
