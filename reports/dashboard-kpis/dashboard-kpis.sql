@@ -8,6 +8,9 @@
 -- trace). Timestamp and numeric columns are typed, so no casts are needed. Single-tenant
 -- export, so no tenant filter. Optional convenience views: data-layer/athena/views.
 -- Add `AND year = '2026'` to each scan to bound cost; omit it for true all-time totals.
+--
+-- Note on replacements:
+--   For BigQuery, replace date_trunc('month', col) with TIMESTAMP_TRUNC(col, MONTH)
 
 -- Query 1: Summary KPIs (single row, all-time totals)
 SELECT

@@ -6,6 +6,9 @@
 -- and numeric columns are typed, so no casts are needed. Single-tenant export, so no tenant
 -- filter. Optional convenience views: data-layer/athena/views.
 -- Tune it: replace 'month' with 'week'/'quarter'/'year'; add `AND year = '2026'` to bound the scan.
+--
+-- Note on replacements:
+--   For BigQuery, replace date_trunc('month', col) with TIMESTAMP_TRUNC(col, MONTH)
 
 SELECT
     date_trunc('month', runstarttime) AS month,

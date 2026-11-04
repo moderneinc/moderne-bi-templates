@@ -53,5 +53,5 @@ Athena bills on **bytes scanned**, so a few rules keep queries cheap and fast:
 
 ## Other options
 
-- **Use a different engine.** Snowflake external stages, BigQuery BigLake, Databricks Unity Catalog, Microsoft Fabric, and DuckDB all read this Hive-partitioned CSV layout directly.
+- **Use a different engine.** See [`../bigquery/`](../bigquery/) for Google BigQuery. Snowflake external stages, Databricks Unity Catalog, Microsoft Fabric, and DuckDB all read this Hive-partitioned CSV layout directly.
 - **Convenience views (optional).** If you'd rather point a BI tool at a pre-scoped surface than at raw `traces`, you can define views, either in Athena or natively in your BI tool, that encapsulate the same `type` scoping the reports use. See [`views/`](views/).
