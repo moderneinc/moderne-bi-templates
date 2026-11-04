@@ -10,6 +10,9 @@
 -- Tune it: replace 'month' with 'week'/'quarter'/'year'; add `AND year = '2026'` to bound the scan.
 --          The runrecipeid LIKE filter targets rewrite-java-security and rewrite-static-
 --          analysis; adjust it for your security recipe namespaces.
+--
+-- Note on replacements:
+--   For BigQuery, replace date_trunc('month', col) with TIMESTAMP_TRUNC(col, MONTH)
 
 SELECT
     date_trunc('month', commitstarttime)                       AS month,

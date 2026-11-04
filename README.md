@@ -27,7 +27,7 @@ Every query and visualization here expects the same logical table, however you p
 - `tenant` is a partition column, but your export contains only your own tenant, so the reports don't filter on it.
 - A data layer may add bookkeeping columns of its own, named with a leading underscore (the Athena example adds `_source_key`). No report reads them.
 
-The reports read `traces` **directly**. Each query carries its own command-`type` scoping (so stage re-emission can't inflate totals), which keeps every report self-contained — copy one file and run it. If you'd rather point a BI tool at a reusable, pre-scoped surface, you can optionally define convenience views in Athena or natively in your BI tool.
+The reports read `traces` **directly**. Each query carries its own command-`type` scoping (so stage re-emission can't inflate totals), which keeps every report self-contained — copy one file and run it. If you'd rather point a BI tool at a reusable, pre-scoped surface, you can optionally define convenience views in Athena or BigQuery, or natively in your BI tool.
 
 Produce this table with the [data layer](data-layer/), which is the path we suggest, or produce it another way and adapt the queries to match. See the [telemetry export docs](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/configuring-telemetry-exports/overview) for the platform-side export configuration.
 
@@ -60,7 +60,7 @@ jupyter notebook            # open anything under dashboards/jupyter/
 **Wiring up your own telemetry?**
 
 1. Configure telemetry export so trace CSV lands in a bucket you own — see the [telemetry export docs](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/configuring-telemetry-exports/overview).
-2. Stand up the `traces` table with the [data layer](data-layer/) (Athena walkthrough included).
+2. Stand up the `traces` table with the [data layer](data-layer/) (Athena and BigQuery walkthroughs included).
 3. Pick a report under [`reports/`](reports/) and run it — the SQL is self-contained.
 4. Render it with a [notebook](dashboards/jupyter/), or wire it into the BI tool of your choice. See the [dashboards overview](dashboards/) for how each tool reads the same table.
 
@@ -70,8 +70,11 @@ jupyter notebook            # open anything under dashboards/jupyter/
 moderne-bi-templates/
 ├── data-layer/                   # optimize the raw CSV for querying
 │   ├── README.md                 # the `traces` contract, shared by every engine
-│   └── athena/
-│       ├── glue/                 # nightly Glue job: raw CSV → typed Iceberg `traces` (example)
+│   ├── athena/
+│   │   ├── glue/                 # nightly Glue job: raw CSV → typed Iceberg `traces` (example)
+│   │   └── views/                # optional convenience views (no report depends on them)
+│   └── bigquery/
+│       ├── external-table/       # nightly job: raw CSV in Cloud Storage → external `traces_raw` → typed `traces` view (example)
 │       └── views/                # optional convenience views (no report depends on them)
 ├── reports/                    # one self-contained report per folder
 │   └── <report>/

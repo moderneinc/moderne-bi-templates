@@ -83,5 +83,5 @@ This example is deliberately minimal, with no metrics or alarms. Nothing here is
 
 ## Other approaches
 
-- **A different engine.** Snowflake, BigQuery, Databricks, Fabric, and DuckDB all read this Hive-partitioned CSV layout directly; a dbt model or scheduled task there can do the same header-by-name read and typing.
+- **A different engine.** [`../../bigquery/`](../../bigquery/) does this for Google BigQuery. Snowflake, Databricks, Fabric, and DuckDB all read this Hive-partitioned CSV layout directly; a dbt model or scheduled task there can do the same header-by-name read and typing.
 - **Fixed types.** If you'd rather pin every column's type than infer it, replace `decide_type` with a dictionary of column → type. You then own adding each new trace field to it.
