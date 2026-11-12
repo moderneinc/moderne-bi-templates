@@ -1,16 +1,16 @@
 # Top Recipes
 
-Most-used recipes ranked by run count and unique users, showing which recipes are delivering the most value.
+This report ranks the most-used recipes by run count and unique users.
 
 ## Data Source
 
-This report uses trace data produced by **`mod run`**. Any later-stage command (`mod git apply`, `mod git commit`, `mod git push`) also includes run-stage data and will work with this query. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed.
+This report uses trace data produced by `mod run`. Any later-stage command (`mod git apply`, `mod git commit`, `mod git push`) also includes run-stage data and will work with this query. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts.
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
-A ranked list of recipes sorted by total runs, with three metrics per recipe:
+The report gives a ranked list of recipes sorted by total runs, with three metrics per recipe:
 
 | Metric | Description |
 |--------|-------------|
@@ -20,7 +20,7 @@ A ranked list of recipes sorted by total runs, with three metrics per recipe:
 
 ## Suggested Visualization
 
-Treemap sized by recipe runs with color intensity by unique users. Alternatively, a horizontal bar chart sorted by run count works well for a simpler view.
+Try a treemap sized by recipe runs with color intensity by unique users. Alternatively, a horizontal bar chart sorted by run count works well for a simpler view.
 
 ![Top Recipes](images/top-recipes.png)
 
@@ -47,8 +47,8 @@ See [top-recipes.ipynb](../../dashboards/jupyter/top-recipes.ipynb) for a ready-
 
 ## Usage
 
-Run `top-recipes.sql` against your `traces` table. The SQL targets AWS Athena (Trino SQL).
+Run `top-recipes.sql` against your `traces` table. The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The query has no date filter, so it scans every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Results are sorted by recipe runs descending. Add a `LIMIT` clause to show only the top N recipes (e.g., `LIMIT 20`).

@@ -1,16 +1,16 @@
 # Security Recipe Run Trend
 
-Monthly trend of committed security remediation, showing fixes that actually landed in code, not just scans. Filtered to security-focused recipes.
+This report tracks committed security remediation month by month. It shows fixes that actually landed in code, not just scans, and it only counts security-focused recipes.
 
 ## Data Source
 
-This report uses trace data produced by **`mod git commit`** (or later). Commit-stage traces include run-stage data, allowing correlation between committed security fixes and their estimated impact. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed.
+This report uses trace data produced by `mod git commit` (or later). Commit-stage traces include run-stage data, which is where the estimated impact comes from. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts.
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
-A monthly (or weekly) view of five security remediation metrics:
+The report gives a monthly (or weekly) view of five security remediation metrics:
 
 | Metric | Description |
 |--------|-------------|
@@ -22,7 +22,7 @@ A monthly (or weekly) view of five security remediation metrics:
 
 ## Suggested Visualization
 
-Dual-axis chart with bars for successful commits by month with a line overlay for estimated hours saved. Files remediated and unique repos fixed work well as secondary series or separate KPI cards above the chart.
+Try a dual-axis chart with bars for successful commits by month and a line overlay for estimated hours saved. Files remediated and unique repos fixed work well as secondary series or separate KPI cards above the chart.
 
 ![Security Recipe Run Trend](images/security-recipe-run-trend.png)
 
@@ -50,9 +50,9 @@ See [security-recipe-run-trend.ipynb](../../dashboards/jupyter/security-recipe-r
 
 ## Usage
 
-Run `security-recipe-run-trend.sql` against your `traces` table. The SQL targets AWS Athena (Trino SQL).
+Run `security-recipe-run-trend.sql` against your `traces` table. The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The query has no date filter, so it scans every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Replace `'month'` in the `DATE_TRUNC` calls with `'week'`, `'quarter'`, or `'year'` to change the time granularity.
 

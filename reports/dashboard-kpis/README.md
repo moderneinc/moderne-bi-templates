@@ -1,17 +1,17 @@
 # Dashboard KPIs
 
-Executive-level snapshot of Moderne adoption and value delivery. Provides single-number KPIs for quick consumption and a monthly trend breakdown for context.
+This report gives executives a snapshot of Moderne adoption: a handful of headline numbers, plus the monthly trend behind them.
 
 ## Data Source
 
 This template includes two queries:
 
-- **Summary KPIs**: uses trace data from **`mod git commit`** (or later) for the fullest picture. Falls back gracefully to `mod run` traces for run-only metrics.
-- **Monthly trend**: uses trace data from **`mod git commit`** (or later).
+- The summary KPIs use trace data from `mod git commit` (or later) for the fullest picture. With only `mod run` traces you still get the run-only metrics.
+- The monthly trend uses trace data from `mod git commit` (or later).
 
-The query reads the wide `traces` table directly, taking run metrics from `type = 'run'` rows and commit metrics from `type = 'commit'` rows, counted separately and joined, so stage re-emission cannot inflate the totals. `traces` columns are typed, so no casts are needed.
+The query reads `traces` directly. Run metrics come from `type = 'run'` rows and commit metrics come from `type = 'commit'` rows. The query counts them separately and joins the results, so a re-emitted stage can't inflate the totals. The columns are already typed, so there are no casts.
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
@@ -32,7 +32,7 @@ The same metrics broken down by month to show adoption trajectory.
 
 ## Suggested Visualization
 
-KPI cards (large single numbers) across the top of a dashboard, with a multi-series area or bar chart below showing the monthly trend. This is the natural landing page for any BI dashboard built from Moderne data.
+Put KPI cards (large single numbers) across the top of a dashboard, with a multi-series area or bar chart below showing the monthly trend. This layout makes a good landing page.
 
 ![Dashboard KPIs Summary](images/dashboard-kpis-summary.png)
 
@@ -71,11 +71,11 @@ See [dashboard-kpis.ipynb](../../dashboards/jupyter/dashboard-kpis.ipynb) for a 
 
 Run `dashboard-kpis.sql` against your `traces` table. The file contains two queries:
 
-1. **Summary KPIs**: returns a single row with all-time totals
-2. **Monthly Trend**: returns one row per month with the same metrics
+1. Summary KPIs returns a single row with all-time totals.
+2. Monthly Trend returns one row per month with the same metrics.
 
-The SQL targets AWS Athena (Trino SQL).
+The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The queries have no date filter, so they scan every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Replace `'month'` in the trend query's `DATE_TRUNC` calls with `'week'`, `'quarter'`, or `'year'` to change the time granularity.

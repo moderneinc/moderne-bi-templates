@@ -1,6 +1,6 @@
 # Jupyter dashboards
 
-One notebook per report. Each notebook renders a single report's chart from that report's bundled sample CSV (in [`../../reports/<report>/`](../../reports)), so every notebook runs immediately — no data layer or cloud access required.
+There's one notebook per report, and each one draws a single report's chart from that report's bundled sample CSV (in [`../../reports/<report>/`](../../reports)), so they all run right away. You don't need the data layer or any cloud access.
 
 | Notebook | Report |
 |----------|--------|
@@ -15,7 +15,7 @@ One notebook per report. Each notebook renders a single report's chart from that
 | [top-recipes-with-commits.ipynb](top-recipes-with-commits.ipynb) | Recipes producing commits |
 | [security-recipe-run-trend.ipynb](security-recipe-run-trend.ipynb) | Security remediation trend |
 
-Each notebook pairs with the query and docs for its report under [`../../reports/<report>/`](../../reports).
+Each notebook goes with the query and docs for its report under [`../../reports/<report>/`](../../reports).
 
 ## Running
 
@@ -28,4 +28,4 @@ The notebooks read each report's sample CSV by relative path (`../../reports/<re
 
 ## Combining panels
 
-These notebooks are intentionally one-per-report so you can grab just the panel you want. They also work as building blocks: if you want a single dashboard view, combine the panels you care about into one notebook and lay them out on a grid.
+There's one notebook per report so you can grab just the panel you want. If you'd rather have a single dashboard view, copy the panels you care about into one notebook and lay them out on a grid.

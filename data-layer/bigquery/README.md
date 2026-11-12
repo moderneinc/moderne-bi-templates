@@ -6,7 +6,7 @@ This is the BigQuery version of the [data layer](../). It takes the raw trace CS
 
 A nightly job ([`external-table/`](external-table/)) starts from the raw trace CSV in a Cloud Storage bucket of yours. It reads each new file once, writes a copy with the two things BigQuery can't read fixed, and looks after two objects over those copies:
 
-1. `traces_raw` is a BigLake external table over the fixed copies, with every column a string. BigQuery matches each file's columns to the table by header name, so files from every command type go into the one wide table, and a file that's missing a column reads it as `NULL`. The job adds a column the first time a header has it. Hive partitioning gives you `tenant`, `source`, `type`, `year`, `month`, and `day` from each object's path.
+1. `traces_raw` is a BigLake external table over the fixed copies, with every column a string. BigQuery matches columns by header name. That's how files from every command type fit in one wide table: if a file is missing a column, it reads as `NULL`. The job adds a column the first time a header has it. Hive partitioning gives you `tenant`, `source`, `type`, `year`, `month`, and `day` from each object's path.
 2. `traces` is a view over `traces_raw` that casts each column to the type its values support (timestamps, counts, durations, rates, booleans). The job works out the types from the data each night and rebuilds the view. This is the one the reports read.
 
 ```
@@ -33,7 +33,7 @@ In the console, write `moderne_telemetry.traces` instead.
 
 The report SQL is written in Trino syntax, and one thing in it needs changing for BigQuery. The reports that trend by month call `date_trunc('month', col)`; write `TIMESTAMP_TRUNC(col, MONTH)` instead. Everything else runs as is. Each report filters on command `type`, and you don't need casts (the columns are typed) or a tenant filter.
 
-A column only exists once some file has had it. If your export has never held a given command type, a report that names one of its columns fails with a column-not-found error instead of returning no rows. It starts working once the first trace of that type has been through a nightly run.
+If your export has never contained a given command type, a report that uses its columns fails with a column-not-found error instead of returning no rows. It starts working once the first trace of that type has been through a nightly run.
 
 ## Performance
 

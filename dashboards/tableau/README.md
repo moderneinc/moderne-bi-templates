@@ -1,3 +1,3 @@
 # Tableau dashboards
 
-Tableau workbooks over the `traces` table.
+This is where Tableau workbooks built on the `traces` table go.

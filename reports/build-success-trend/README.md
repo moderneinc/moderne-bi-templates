@@ -1,16 +1,16 @@
 # Build Success Trend
 
-Monthly build health across the organization. Answers "is our build reliability improving over time?" and helps identify spikes in failures after CLI upgrades or new repo onboarding.
+This report shows monthly build health across the organization. It answers "is our build reliability improving over time?" and helps you spot failure spikes after CLI upgrades or when new repos come on board.
 
 ## Data Source
 
-This report uses trace data produced by **`mod build`** (or later). Build-stage traces record the outcome of each build attempt. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed. (Build columns appear on every command that runs a build, so the query spans those types and counts each build once with `COUNT(DISTINCT buildid)`.)
+This report uses trace data produced by `mod build` (or later). Build-stage traces record the outcome of each build attempt. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts. (Build columns appear on every command that runs a build, so the query spans those types and counts each build once with `COUNT(DISTINCT buildid)`.)
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
-A monthly view of build reliability with five metrics:
+The report gives a monthly view of build reliability with five metrics:
 
 | Metric | Description |
 |--------|-------------|
@@ -22,7 +22,7 @@ A monthly view of build reliability with five metrics:
 
 ## Suggested Visualization
 
-Stacked bar chart (successful vs. failed builds) with a line overlay for success rate percentage on a secondary y-axis.
+Try a stacked bar chart (successful vs. failed builds) with a line overlay for success rate percentage on a secondary y-axis.
 
 ![Build Success Trend](images/build-success-trend.png)
 
@@ -47,8 +47,8 @@ See [build-success-trend.ipynb](../../dashboards/jupyter/build-success-trend.ipy
 
 ## Usage
 
-Run `build-success-trend.sql` against your `traces` table. The SQL targets AWS Athena (Trino SQL).
+Run `build-success-trend.sql` against your `traces` table. The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The query has no date filter, so it scans every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Replace `'month'` in the `DATE_TRUNC` calls with `'week'`, `'quarter'`, or `'year'` to change the time granularity.

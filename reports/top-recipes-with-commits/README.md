@@ -1,16 +1,16 @@
 # Top Recipes with Commits
 
-Recipes that produce real committed code changes, distinguishing recipes that were tried from recipes that delivered results into production codebases.
+This report lists the recipes that ended up as committed code changes. It separates the recipes people tried from the ones that landed in real codebases.
 
 ## Data Source
 
-This report uses trace data produced by **`mod git commit`** (or later). Commit-stage traces include both run and commit data, showing which recipes led to actual code changes. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed.
+This report uses trace data produced by `mod git commit` (or later). Commit-stage traces include both run and commit data, so each commit can be tied back to its recipe. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts.
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
-A ranked list of recipes filtered to only those with successful commits:
+The report gives a ranked list of recipes filtered to only those with successful commits:
 
 | Metric | Description |
 |--------|-------------|
@@ -20,7 +20,7 @@ A ranked list of recipes filtered to only those with successful commits:
 
 ## Suggested Visualization
 
-Horizontal bar chart sorted by commit count. Pair with the [Top Recipes](../top-recipes/) template to compare total runs vs. committed results; the gap between the two reveals recipes that are explored but not applied.
+Try a horizontal bar chart sorted by commit count. Pair with the [Top Recipes](../top-recipes/) template to compare total runs vs. committed results; the gap shows you which recipes people explore but don't apply.
 
 ![Top Recipes with Commits](images/top-recipes-with-commits.png)
 
@@ -47,8 +47,8 @@ See [top-recipes-with-commits.ipynb](../../dashboards/jupyter/top-recipes-with-c
 
 ## Usage
 
-Run `top-recipes-with-commits.sql` against your `traces` table. The SQL targets AWS Athena (Trino SQL).
+Run `top-recipes-with-commits.sql` against your `traces` table. The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The query has no date filter, so it scans every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Results are sorted by commits descending. Add a `LIMIT` clause to show only the top N recipes (e.g., `LIMIT 20`).

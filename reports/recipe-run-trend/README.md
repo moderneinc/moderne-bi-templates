@@ -1,16 +1,16 @@
 # Recipe Run Trend
 
-Monthly adoption trend showing how Moderne usage is growing over time.
+This report tracks Moderne adoption month by month, so you can see whether usage is growing.
 
 ## Data Source
 
-This report uses trace data produced by **`mod run`**. Any later-stage command (`mod git apply`, `mod git commit`, `mod git push`) also includes run-stage data and will work with this query. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed.
+This report uses trace data produced by `mod run`. Any later-stage command (`mod git apply`, `mod git commit`, `mod git push`) also includes run-stage data and will work with this query. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts.
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
-A monthly (or weekly) view of three adoption metrics:
+The report gives a monthly (or weekly) view of three adoption metrics:
 
 | Metric | Description |
 |--------|-------------|
@@ -20,7 +20,7 @@ A monthly (or weekly) view of three adoption metrics:
 
 ## Suggested Visualization
 
-Grouped bar chart with three series (one per metric) on a shared time axis. Alternatively, a multi-line chart works well for spotting trends across longer time ranges.
+Try a grouped bar chart with three series (one per metric) on a shared time axis. Alternatively, a multi-line chart works well for spotting trends across longer time ranges.
 
 ![Recipe Run Trend](images/recipe-run-trend.png)
 
@@ -46,8 +46,8 @@ See [recipe-run-trend.ipynb](../../dashboards/jupyter/recipe-run-trend.ipynb) fo
 
 ## Usage
 
-Run `recipe-run-trend.sql` against your `traces` table. The SQL targets AWS Athena (Trino SQL).
+Run `recipe-run-trend.sql` against your `traces` table. The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The query has no date filter, so it scans every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Replace `'month'` in the `DATE_TRUNC` calls with `'week'`, `'quarter'`, or `'year'` to change the time granularity.

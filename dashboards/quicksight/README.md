@@ -1,29 +1,29 @@
 # QuickSight dashboards
 
-Amazon QuickSight analyses over the `traces` table, shipped as a sanitized [asset bundle](https://docs.aws.amazon.com/quicksight/latest/developerguide/asset-bundle-ops.html) export. Importing it creates one analysis, **Moderne BI Templates**, backed by 13 SPICE datasets and a single Athena data source.
+This is the Amazon QuickSight version of the reports, built on the `traces` table and shipped as a sanitized [asset bundle](https://docs.aws.amazon.com/quicksight/latest/developerguide/asset-bundle-ops.html) export. Importing it creates one analysis, "Moderne BI Templates", backed by 13 SPICE datasets and a single Athena data source.
 
-> **This bundle will not import as-is.** Real identifiers have been stripped: every ARN in `analysis/` and `dataset/` carries the literal placeholders `<AWS_ACCOUNT_ID>` and `<REGION>`, which are not valid ARN components. `StartAssetBundleImportJob` rejects the bundle until you [substitute them](#1-substitute-the-placeholders).
+> This bundle won't import as is. Real identifiers have been stripped, so every ARN in `analysis/` and `dataset/` contains the literal placeholders `<AWS_ACCOUNT_ID>` and `<REGION>`, which aren't valid ARN components. `StartAssetBundleImportJob` rejects the bundle until you [substitute them](#1-substitute-the-placeholders).
 
 ## What's in the bundle
 
 ```
 dashboards/quicksight/
-├── analysis/      # 1 file  — the "Moderne BI Templates" analysis (10 sheets, 17 visuals)
-├── dataset/       # 13 files — 12 custom-SQL datasets + the raw `traces` table
-└── datasource/    # 1 file  — "BI Telemetry", an Athena data source
+├── analysis/      # 1 file: the "Moderne BI Templates" analysis (10 sheets, 17 visuals)
+├── dataset/       # 13 files: 12 custom-SQL datasets + the raw `traces` table
+└── datasource/    # 1 file: "BI Telemetry", an Athena data source
 ```
 
-Filenames are the asset UUIDs, which is what a QuickSight export produces and what the import job expects. There is no manifest — the three directories *are* the bundle, zipped at their common root. Additional analyses drop in as more files in the same directories.
+Filenames are the asset UUIDs, which is what a QuickSight export produces and what the import job expects. There's no manifest. The three directories are the bundle, zipped at their common root. Additional analyses drop in as more files in the same directories.
 
-The JSON is pretty-printed (2-space indent, original key order, trailing newline) purely so diffs are readable; whitespace has no effect on import. Each `sqlQuery` remains a single escaped string, which JSON gives no way around.
+The JSON is pretty-printed (2-space indent, original key order, trailing newline) so diffs are readable; whitespace has no effect on import. Each `sqlQuery` remains a single escaped string, which JSON gives no way around.
 
 ## What the analysis shows
 
-Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report query from [`../../reports`](../../reports) with the schema qualified as `moderne_telemetry.traces` — see each report's folder for the query, its documentation, sample data, and a screenshot.
+The analysis has ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report query from [`../../reports`](../../reports) with the schema qualified as `moderne_telemetry.traces`. See each report's folder for the query, its documentation, sample data, and a screenshot.
 
 | Sheet | Visuals | Dataset(s) | Report |
 |-------|---------|------------|--------|
-| Dashboard KPIs | 6 KPI tiles (untitled — labels come from their fields) + combo chart "Monthly Trend" | `Dashboard KPIs Summary`, `Dashboard KPIs Trend` | [Dashboard KPIs](../../reports/dashboard-kpis/) |
+| Dashboard KPIs | 6 KPI tiles (untitled; labels come from their fields) + combo chart "Monthly Trend" | `Dashboard KPIs Summary`, `Dashboard KPIs Trend` | [Dashboard KPIs](../../reports/dashboard-kpis/) |
 | Build Tool Distribution | bar "Build Tool Versions (by Repos)", pie "Build Tool Distribution (by Repos)" | `Build Tool Versions`, `Build Tool Distribution` | [Build Tool Distribution](../../reports/build-tool-distribution/) |
 | Build Success Trend | combo "Build Success Trend" | `Build Success Trend` | [Build Success Trend](../../reports/build-success-trend/) |
 | Commit Activity | combo "Commit Activity" | `Commit Activity` | [Commit Activity](../../reports/commit-activity/) |
@@ -34,23 +34,23 @@ Ten sheets, one per report, plus a KPI landing sheet. Every dataset is a report 
 | Top Recipes with Commits | bar "Top Recipes with Commits" | `Top Recipes with Commits` | [Top Recipes with Commits](../../reports/top-recipes-with-commits/) |
 | Top Users | bar "Top Users" | `Top Users` | [Top Users](../../reports/top-users/) |
 
-A thirteenth dataset, **`traces`**, is a direct relational table over `moderne_telemetry.traces` (98 columns). It is declared in the analysis but no visual uses it. It's there as a starting point for building your own sheets against the raw table.
+A thirteenth dataset, `traces`, is a direct relational table over `moderne_telemetry.traces` (98 columns). It's declared in the analysis, but no visual uses it. It's there as a starting point for building your own sheets against the raw table.
 
-Other analysis-level details: NITRO theme, `LENIENT` validation, no parameters, no filter groups, and one calculated field — `Built Tool + Version` on the `Build Tool Versions` dataset, defined as `concat({Build Tool}, ' ', {Tool Version})`.
+A few other details: the analysis uses the NITRO theme and `LENIENT` validation, and it has no parameters or filter groups. It has one calculated field, `Built Tool + Version`, on the `Build Tool Versions` dataset, defined as `concat({Build Tool}, ' ', {Tool Version})`.
 
-All 13 datasets use **SPICE** import mode, so they hold a snapshot rather than querying Athena live. The bundle deliberately carries no refresh schedules, permissions, or tags — see [After import](#after-import) for what to set up once the assets land.
+All 13 datasets use SPICE import mode, so they hold a snapshot rather than querying Athena live. The bundle has no refresh schedules, permissions, or tags. [After import](#after-import) covers what to set up once the assets land.
 
 ## Prerequisites
 
-- An **Athena data source** reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. The workgroup name is arbitrary. The repo sets no convention for it, so use whichever one you created in [step 2 of the Athena setup](../../data-layer/athena/README.md#2-create-an-athena-workgroup).
-- A **schema** containing the wide **`traces`** table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's Glue job](../../data-layer/athena/glue/) creates, so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
-- **QuickSight permission to create SPICE datasets**, plus enough SPICE capacity for 13 datasets. The importing principal needs `quicksight:StartAssetBundleImportJob` and create permissions on analyses, datasets, and data sources.
+- An Athena data source reachable from QuickSight, with a workgroup whose query-result location QuickSight can write to. The bundle's data source is named `BI Telemetry` and points at a workgroup called `telemetry`. You can use any workgroup name. The one you created in [step 2 of the Athena setup](../../data-layer/athena/README.md#2-create-an-athena-workgroup) works.
+- A schema containing the wide `traces` table. The bundle qualifies its SQL as `moderne_telemetry.traces`, matching the Glue database the [data layer's Glue job](../../data-layer/athena/glue/) creates, so if you followed that walkthrough, the datasets resolve as-is. Produce the table another way and the [`traces` contract](../../README.md#the-traces-table) is what matters; rename the schema below if yours differs.
+- QuickSight permission to create SPICE datasets, plus enough SPICE capacity for 13 datasets. The importing principal needs `quicksight:StartAssetBundleImportJob` and create permissions on analyses, datasets, and data sources.
 
 The 12 custom-SQL datasets read 22 columns from `traces`:
 
 `type`, `path`, `developer`, `runid`, `runrecipeid`, `runrecipeinstancename`, `runstarttime`, `runfileswithfixresults`, `runestimatedefforttimesavingsms`, `commitid`, `commitstarttime`, `commitoutcome`, `buildid`, `buildstarttime`, `buildoutcome`, `buildmavenversion`, `buildgradleversion`, `buildbazelversion`, `builddotnetversion`, `buildpythonversion`, `buildnodeversion`, `month`
 
-The raw `traces` dataset declares 98 columns; the other 76 go unused by these datasets. Your table can hold more than the bundle declares: the data layer adds a column for each new trace field, and the Athena example adds its own `_source_key` bookkeeping column. The bundle ignores any column it doesn't declare. The reverse is not true: a dataset fails to ingest if it names a column your table doesn't have yet, which happens when your export has never held a trace of that command type (see the [Athena data layer](../../data-layer/athena/README.md#3-query)). See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
+Extra columns in your table are fine, because the bundle ignores any column it doesn't declare. Missing columns are a problem: a dataset fails to ingest if it names a column your table doesn't have yet. That happens when your export has never held a trace of that command type (see the [Athena data layer](../../data-layer/athena/README.md#3-query)). See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for what each column means.
 
 ## Importing
 
@@ -63,23 +63,23 @@ export REGION=us-east-1              # the region your QuickSight account lives 
 
 ### 1. Substitute the placeholders
 
-From this directory, replace the account ID and region everywhere they appear (14 files — all 13 datasets and the analysis):
+From this directory, replace the account ID and region everywhere they appear (14 files: all 13 datasets and the analysis):
 
 ```bash
 grep -rl '<AWS_ACCOUNT_ID>\|<REGION>' analysis dataset datasource | xargs sed -i.bak -e "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" -e "s/<REGION>/$REGION/g" && find . -name '*.bak' -delete
 ```
 
-The data layer's Glue job creates whichever database its `--database` argument names. The walkthrough uses `moderne_telemetry`, and the bundle matches it, so this step is a no-op if you followed that walkthrough. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
+The data layer's Glue job creates whichever database its `--database` argument names. The walkthrough uses `moderne_telemetry`, and so does the bundle. If you followed the walkthrough, skip this step. If you named yours something else, rewrite the 15 `moderne_telemetry.traces` references in the SQL plus the `"schema"` field on the raw `traces` dataset:
 
 ```bash
 grep -rl moderne_telemetry dataset | xargs sed -i.bak -e 's/moderne_telemetry\.traces/my_schema.traces/g' -e 's/"schema": "moderne_telemetry"/"schema": "my_schema"/g' && find . -name '*.bak' -delete
 ```
 
-The workgroup is tracked separately from the schema, so it is deliberately left as plain `telemetry` and the command above will not touch it. If yours differs, edit `"workGroup"` in `datasource/0727c710-7910-4a77-bfce-a0ad18953eea.json` — or override it at import time (see below). Work on a copy, not in place, if you want the repo's placeholders to stay intact.
+The workgroup is tracked separately from the schema, so it's left as plain `telemetry`, and the command above won't touch it. If yours differs, edit `"workGroup"` in `datasource/0727c710-7910-4a77-bfce-a0ad18953eea.json`, or override it at import time (see below). Work on a copy, not in place, if you want the repo's placeholders to stay intact.
 
 ### 2. Zip and import
 
-Zip the three directories at their common root — no wrapping folder, or the import job won't find the assets:
+Zip the three directories at their common root, with no wrapping folder, or the import job won't find the assets:
 
 ```bash
 zip -r ../../moderne-quicksight-bundle.zip analysis dataset datasource
@@ -94,7 +94,7 @@ aws quicksight start-asset-bundle-import-job \
   --failure-action ROLLBACK
 ```
 
-The call returns immediately with a `JobStatus` of `QUEUED_FOR_IMMEDIATE_EXECUTION`. Poll for the outcome — a failed job lists every offending asset under `Errors`:
+The call returns immediately with a `JobStatus` of `QUEUED_FOR_IMMEDIATE_EXECUTION`. Poll for the outcome. A failed job lists every offending asset under `Errors`:
 
 ```bash
 aws quicksight describe-asset-bundle-import-job \
@@ -125,7 +125,7 @@ Use a fresh `--asset-bundle-import-job-id` for each attempt; IDs can't be reused
 }
 ```
 
-That handles the **workgroup**, but not the two things most likely to block you: overrides can't rewrite the `<REGION>`/`<AWS_ACCOUNT_ID>` placeholders inside the ARNs, and dataset overrides accept only `DataSetId` and `Name` — there's no knob for the Athena schema. Both still need the substitutions in step 1.
+That handles the workgroup, but not the two things most likely to block you: overrides can't rewrite the `<REGION>`/`<AWS_ACCOUNT_ID>` placeholders inside the ARNs, and dataset overrides accept only `DataSetId` and `Name`, so there's no knob for the Athena schema. Both still need the substitutions in step 1.
 
 ## After import
 
@@ -133,17 +133,17 @@ A successful import creates the assets but leaves them empty and private. Three 
 
 ### 1. Populate SPICE
 
-Every dataset imports empty — visuals stay blank until each one is ingested once. The dataset IDs are the filenames in `dataset/`, so the whole set can be kicked off in a loop:
+Every dataset imports empty, so visuals stay blank until each one is ingested once. The dataset IDs are the filenames in `dataset/`, so the whole set can be kicked off in a loop:
 
 ```bash
 for f in dataset/*.json; do id=$(basename "$f" .json); aws quicksight create-ingestion --region "$REGION" --aws-account-id "$AWS_ACCOUNT_ID" --data-set-id "$id" --ingestion-id "initial-load-$id" --ingestion-type FULL_REFRESH; done
 ```
 
-Ingestion IDs must be unique per dataset, hence the suffix. Poll one with `describe-ingestion` if a dataset looks wrong — a query that fails against your schema surfaces there, not at import time.
+Ingestion IDs must be unique per dataset, hence the suffix. Poll one with `describe-ingestion` if a dataset looks wrong. A query that fails against your schema surfaces there, not at import time.
 
 ### 2. Schedule refreshes
 
-This is the step the bundle intentionally leaves out: a schedule's `StartAfterDateTime` has to be in the future, so any date committed to the repo would go stale and start failing imports. Create one per dataset at whatever cadence suits your telemetry export:
+The bundle doesn't include this step, because a schedule's `StartAfterDateTime` has to be in the future, so any date committed to the repo would go stale and start failing imports. Create one per dataset at whatever cadence suits your telemetry export:
 
 ```bash
 aws quicksight create-refresh-schedule \
@@ -165,7 +165,7 @@ Daily suits the nightly data-layer job. Refreshing more often than the data laye
 
 ### 3. Share it
 
-The bundle ships no permissions, so the principal that ran the import is the sole owner of all 15 assets. Granting access to the analysis alone is not enough — QuickSight resolves permissions per asset, so a viewer who can open the analysis but can't read its datasets gets errors instead of visuals. Grant down the whole chain: the analysis, all 13 datasets, and the data source.
+The bundle ships no permissions, so the principal that ran the import is the sole owner of all 15 assets. Granting access to the analysis alone isn't enough. QuickSight resolves permissions per asset, so a viewer who can open the analysis but can't read its datasets gets errors instead of visuals. Grant down the whole chain: the analysis, all 13 datasets, and the data source.
 
 ```bash
 aws quicksight update-analysis-permissions \
@@ -182,10 +182,10 @@ To hand this to people who shouldn't edit it, publish a read-only dashboard from
 
 ### Optional: switch to DIRECT_QUERY
 
-SPICE is the deliberate default here. These queries carry no date filter by design, so under DIRECT_QUERY every visual interaction re-scans every partition in Athena, where cost tracks bytes scanned, and ten sheets of that adds up fast. SPICE confines Athena reads to refresh time, which is bounded and predictable, at the cost of showing a snapshot.
+SPICE is the default here. The queries have no date filter, so under DIRECT_QUERY every interaction with a visual re-scans every partition in Athena. Athena bills by bytes scanned, and across ten sheets that adds up fast. SPICE only reads from Athena at refresh time, so the cost is predictable. The trade-off is that you see a snapshot.
 
-If you want live data anyway, change `"importMode": "SPICE"` to `"importMode": "DIRECT_QUERY"` in each dataset **before** importing, and bound the scans by adding a partition predicate (`AND year = '2026'`) to each `sqlQuery`. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+If you want live data anyway, change `"importMode": "SPICE"` to `"importMode": "DIRECT_QUERY"` in each dataset before importing, and bound the scans by adding a partition predicate (`AND year = '2026'`) to each `sqlQuery`. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
 
 ## Round-tripping
 
-Re-exporting from QuickSight after import does **not** reproduce these files. The export is minified rather than pretty-printed, and QuickSight assigns fresh UUIDs to every asset (which also renames every file). A re-export therefore diffs as a complete rewrite of all 15 files, not as the edits you actually made. Treat the bundle here as a starting template to import from, and keep your own exports somewhere else.
+Re-exporting from QuickSight after import doesn't reproduce these files. The export is minified rather than pretty-printed, and QuickSight assigns fresh UUIDs to every asset (which also renames every file). A re-export therefore diffs as a complete rewrite of all 15 files, not as the edits you actually made. Treat the bundle here as a starting template to import from, and keep your own exports somewhere else.

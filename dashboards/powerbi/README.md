@@ -1,3 +1,3 @@
 # Power BI dashboards
 
-Power BI reports over the `traces` table.
+This is where Power BI reports built on the `traces` table go.

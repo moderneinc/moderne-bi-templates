@@ -8,15 +8,20 @@ It starts from files that are already in Cloud Storage. Moderne's export lands i
 
 Each run goes through five steps.
 
-1. It only touches new and changed objects. It lists both prefixes and rewrites any raw object whose checksum doesn't match the one recorded on its copy. A normal night handles just that day's uploads, no matter how much history is in the bucket. If an object is delivered again, the new one replaces the earlier copy, and a late replica gets picked up whenever it shows up, even if its modification time is old. The [data layer overview](../../README.md#how-telemetry-lands) covers both cases.
+1. It only touches new and changed objects. It lists both prefixes and rewrites any raw object whose checksum doesn't match the one recorded on its copy. A normal night handles just that day's uploads, no matter how much history is in the bucket. If an object is delivered again, the new copy replaces the old one. If a replica arrives late, the job still picks it up, even when its modification time looks old. The [data layer overview](../../README.md#how-telemetry-lands) covers both cases.
 2. It fixes two things BigQuery can't read, in the copy only. A trace tag header `tag.<key>` becomes `tag_<key>`, because BigQuery doesn't allow a period in a column name and the platform tags every run it executes. A timestamp that ends in a bracketed zone id, like `2026-06-10T21:50:25Z[Etc/UTC]` (CLI versions before 4.8.9 wrote these), loses the bracket so BigQuery can parse it. Nothing else in a file changes, and the raw files are never modified.
-3. It adds columns as it finds them. Before uploading a file it reads the header, and any name `traces_raw` doesn't have yet becomes a new STRING column first. That way no query ever hits a file with a column the table doesn't know about. Trace tags work the same way, one `tag_<key>` column per key. On the first run it builds `traces_raw` from the first file's header and grows it from there. BigQuery column names are case-insensitive, so two headers that differ only in case end up as one column.
+3. It adds columns as it finds them. Before it uploads a file, it reads the file's header. Any name `traces_raw` doesn't have yet is added as a new STRING column. This happens before the upload, so no query can hit a file with a column the table doesn't know about. Trace tags work the same way, one `tag_<key>` column per key. On the first run it builds `traces_raw` from the first file's header and grows it from there. BigQuery column names are case-insensitive, so two headers that differ only in case end up as one column.
 4. It works out each column's type from the values in it. One query over `traces_raw` counts, for every column, how many values are a boolean, an integer, a double, or a timestamp. A column gets the first of those types that at least 99.9% of its non-empty values match, and stays a string if none do. `*id` columns, `tag_*` columns, and the partition keys are always strings.
 5. It rebuilds the `traces` view. The view selects every column of `traces_raw` through `SAFE_CAST`, or `SAFE.PARSE_TIMESTAMP` for timestamps. A value that doesn't fit its column's type reads as `NULL` in that cell instead of failing the query, and an empty string reads as `NULL` too. If a column's type changes between runs, only the view changes. No data gets rewritten.
 
 That leaves two objects in BigQuery that the job owns.
 
-`traces_raw` is a BigLake external table over the fixed copies, with every column a STRING. Columns match by header name, so a column can sit at a different position in each file (they move between CLI versions) and a file that's missing a column reads it as `NULL`. That's how one table covers every command type: a `build` file just has no `run*` columns. Hive partitioning reads `tenant`, `source`, `type`, `year`, `month`, and `day` from each object's path as STRING columns, and a filter on them skips the files it rules out. Free-text columns like `agentPrompt` can span lines, so the table allows quoted newlines. You'll also see `_FILE_NAME`, BigQuery's pseudo column for the object a row came from. No report uses it.
+`traces_raw` is a BigLake external table over the fixed copies, with every column a STRING. Four things about how it behaves:
+
+- Columns match by header name, so a column can sit at a different position in each file (they move between CLI versions) and a file that's missing a column reads it as `NULL`. That's how one table covers every command type: a `build` file just has no `run*` columns.
+- Hive partitioning reads `tenant`, `source`, `type`, `year`, `month`, and `day` from each object's path as STRING columns, and filtering on them skips the files you rule out.
+- Free-text columns like `agentPrompt` can span lines, so the table allows quoted newlines.
+- `_FILE_NAME` is BigQuery's pseudo column for the object a row came from. No report uses it.
 
 `traces` is the typed view the reports read.
 
@@ -62,7 +67,7 @@ python build_traces.py \
 
 ### 3. Schedule it
 
-Run step 2 every night, after your copy into the bucket has finished. Use whatever you already schedule jobs with: cron, a CI schedule, or a Cloud Run job started by Cloud Scheduler. A non-zero exit means something needs a look.
+Run step 2 every night, after your copy into the bucket has finished. Use whatever you already schedule jobs with: cron, a CI schedule, or a Cloud Run job started by Cloud Scheduler. A non-zero exit means something went wrong and is worth investigating.
 
 `--max-staleness` turns on BigLake [metadata caching](https://cloud.google.com/bigquery/docs/metadata-caching) for `traces_raw`. Without it, every query over the table lists all the files before reading any. With it, BigQuery caches that list, and the job refreshes the cache whenever it copies new files. The value is an [interval](https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type), such as `'0-0 1 12:0:0'` for 36 hours. Queries use the cache only while it's younger than that, and list the files again once it's older, so pick a value that fits your schedule. Leave the option out to turn caching off.
 
@@ -70,7 +75,7 @@ To start over, drop `traces_raw` with `bq rm -t moderne_telemetry.traces_raw`. T
 
 ## Making it production-grade
 
-This example is minimal on purpose, so there are no metrics or alarms. It's a Python script, Cloud Storage, and a BigQuery external table, with nothing Moderne-specific in it, so add whatever your environment needs. A few things you might want:
+This example is minimal, so there are no metrics or alarms. It's a Python script, Cloud Storage, and a BigQuery external table, with nothing Moderne-specific in it, so add whatever your environment needs. A few things you might want:
 
 - Alerting on a non-zero exit of the job, and on a night that found nothing new.
 - A native table if you query it heavily. A CSV external table reads every byte of every file a query touches. A [scheduled query](https://cloud.google.com/bigquery/docs/scheduling-queries) that appends each day's partitions from `traces` into a native table, partitioned by day and clustered by `type`, gives your dashboards columnar reads over the same columns.

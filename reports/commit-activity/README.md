@@ -1,16 +1,16 @@
 # Commit Activity
 
-Tracks committed output over time, the proof that recipes produce real code changes. Shows both the volume of commits and the breadth of repositories affected.
+This report tracks committed output over time: how many commits landed and how many repositories they touched. It's the evidence that recipes produce real code changes.
 
 ## Data Source
 
-This report uses trace data produced by **`mod git commit`** (or later). Commit-stage traces include run-stage data, allowing correlation between committed output and estimated capacity recovered. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed.
+This report uses trace data produced by `mod git commit` (or later). Commit-stage traces include run-stage data, which is where the estimated hours saved come from. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts.
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
-A monthly view of committed recipe changes with three metrics:
+The report gives a monthly view of committed recipe changes with three metrics:
 
 | Metric | Description |
 |--------|-------------|
@@ -20,7 +20,7 @@ A monthly view of committed recipe changes with three metrics:
 
 ## Suggested Visualization
 
-Stacked bar chart for successful commits by month with a line overlay for unique repos changed. Estimated hours saved works well as a secondary y-axis or as a separate KPI card.
+Try a stacked bar chart for successful commits by month with a line overlay for unique repos changed. Estimated hours saved works well as a secondary y-axis or as a separate KPI card.
 
 ![Commit Activity](images/commit-activity.png)
 
@@ -46,8 +46,8 @@ See [commit-activity.ipynb](../../dashboards/jupyter/commit-activity.ipynb) for 
 
 ## Usage
 
-Run `commit-activity.sql` against your `traces` table. The SQL targets AWS Athena (Trino SQL).
+Run `commit-activity.sql` against your `traces` table. The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The query has no date filter, so it scans every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
 
 Replace `'month'` in the `DATE_TRUNC` calls with `'week'`, `'quarter'`, or `'year'` to change the time granularity.

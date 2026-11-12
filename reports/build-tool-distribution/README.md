@@ -1,12 +1,12 @@
 # Build Tool & Language Distribution
 
-Distribution of build tools and versions across successfully built repositories. Answers "what does our technology landscape look like?" and helps plan migrations (e.g., how many repos are still on Maven 3.6?).
+This report shows the distribution of build tools and versions across successfully built repositories. It answers "what does our technology landscape look like?" and helps you plan migrations (e.g., how many repos are still on Maven 3.6?).
 
 ## Data Source
 
-This report uses trace data produced by **`mod build`** (or later). Build-stage traces record which build tool and version was used for each repository. The query reads the wide `traces` table directly and scopes to the right command `type`, so the report is self-contained. `traces` columns are typed, so no casts are needed. (Build columns appear on every command that runs a build, so the query spans those types and counts each build once with `COUNT(DISTINCT buildid)`.)
+This report uses trace data produced by `mod build` (or later). Build-stage traces record which build tool and version was used for each repository. The query reads `traces` directly, so you can copy the file and run it. It filters on the command `type` it needs. The columns are already typed, so there are no casts. (Build columns appear on every command that runs a build, so the query spans those types and counts each build once with `COUNT(DISTINCT buildid)`.)
 
-See the [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) for the full column reference.
+The [trace.csv reference](https://docs.moderne.io/user-documentation/moderne-cli/references/trace-csv) describes every column.
 
 ## What This Report Shows
 
@@ -24,7 +24,7 @@ The same metrics broken down by specific tool version (e.g., Maven 3.9.6, Gradle
 
 ## Suggested Visualization
 
-Pie or donut chart for build tool distribution, with a grouped horizontal bar chart for version breakdown within each tool.
+Use a pie or donut chart for build tool distribution, with a grouped horizontal bar chart for version breakdown within each tool.
 
 ![Build Tool Distribution](images/build-tool-summary.png)
 
@@ -66,9 +66,9 @@ See [build-tool-distribution.ipynb](../../dashboards/jupyter/build-tool-distribu
 
 Run `build-tool-distribution.sql` against your `traces` table. The file contains two queries:
 
-1. **Build Tool Summary**: one row per build tool with repo and build counts
-2. **Version Breakdown**: one row per tool version for detailed distribution
+1. Build Tool Summary returns one row per build tool with repo and build counts.
+2. Version Breakdown returns one row per tool version.
 
-The SQL targets AWS Athena (Trino SQL).
+The SQL is written in Trino syntax. For BigQuery, see [querying on BigQuery](../../data-layer/bigquery/README.md#2-query).
 
-> **Performance:** On AWS Athena, cost tracks bytes scanned. These queries carry no date filter, so they scan every partition; add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to bound the scan on larger datasets. Parquet plus column pruning keeps a report that reads only a few columns cheap. See the [data layer performance notes](../../data-layer/athena/README.md#performance).
+The queries have no date filter, so they scan every partition. Once you have a lot of history, add `AND year = '2026'` (or a range like `year IN ('2026','2027')`) to narrow the scan. Both engines bill by bytes read. See the performance notes for [Athena](../../data-layer/athena/README.md#performance) and [BigQuery](../../data-layer/bigquery/README.md#performance).
