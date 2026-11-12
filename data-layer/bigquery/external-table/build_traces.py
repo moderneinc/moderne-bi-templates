@@ -185,6 +185,22 @@ class RawTable:
         table.external_data_configuration = external_config(destination, connection)
         self.table = self.client.create_table(table)
 
+    def cache(self, max_staleness):
+        if self.table.max_staleness == max_staleness:
+            return
+        config = self.table.external_data_configuration
+        config._properties["metadataCacheMode"] = "MANUAL"
+        self.table.external_data_configuration = config
+        self.table.max_staleness = max_staleness
+        self.table = self.client.update_table(self.table, ["max_staleness", "external_data_configuration"])
+        LOG.info("max staleness of %s set to %s", self.table_id, max_staleness or "none")
+
+    def refresh(self):
+        self.client.query(
+            f"CALL BQ.REFRESH_EXTERNAL_METADATA_CACHE('{self.table_id}')", location=self.table.location
+        ).result()
+        LOG.info("metadata cache of %s refreshed", self.table_id)
+
 
 def current_types(client, view_id):
     try:
@@ -206,6 +222,9 @@ def main():
                         help="the dataset that holds traces_raw and traces")
     parser.add_argument("--connection", required=True, metavar="project.region.name",
                         help="the BigLake connection the external table reads the bucket through")
+    parser.add_argument("--max-staleness", metavar="INTERVAL",
+                        help="turn on metadata caching for traces_raw, as a BigQuery interval such as '0-0 1 12:0:0'; "
+                             "the job refreshes the cache after it copies")
     args = parser.parse_args()
 
     source_bucket, source_prefix = split_uri(args.source, "gs")
@@ -227,6 +246,7 @@ def main():
         LOG.warning("%d object(s) under %s are outside the trace layout and were not copied",
                     outside, args.source)
     if raw.exists():
+        raw.cache(args.max_staleness)
         copied = list_destination(*destination)
         pending = sorted(key for key, etag in objects.items() if copied.get(key) != etag)
     else:
@@ -249,11 +269,14 @@ def main():
     if not raw.exists():
         raw.create(copy(pending[0]), (destination_bucket, destination_prefix), args.connection)
         LOG.info("created %s with %d column(s)", raw.table_id, len(raw.data_columns()))
+        raw.cache(args.max_staleness)
         rest = pending[1:]
     with concurrent.futures.ThreadPoolExecutor(WORKERS) as pool:
         for _ in pool.map(copy, rest):
             pass
     LOG.info("%d object(s) copied to %s", len(pending), args.destination)
+    if args.max_staleness:
+        raw.refresh()
 
     columns = raw.data_columns()
     profile = next(iter(bq.query(profile_sql(raw.table_id, columns)).result()))

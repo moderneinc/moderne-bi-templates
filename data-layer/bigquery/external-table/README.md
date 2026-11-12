@@ -64,6 +64,8 @@ python build_traces.py \
 
 Run step 2 every night, after your copy into the bucket has finished. Use whatever you already schedule jobs with: cron, a CI schedule, or a Cloud Run job started by Cloud Scheduler. A non-zero exit means something needs a look.
 
+`--max-staleness` turns on BigLake [metadata caching](https://cloud.google.com/bigquery/docs/metadata-caching) for `traces_raw`. Without it, every query over the table lists all the files before reading any. With it, BigQuery caches that list, and the job refreshes the cache whenever it copies new files. The value is an [interval](https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type), such as `'0-0 1 12:0:0'` for 36 hours. Queries use the cache only while it's younger than that, and list the files again once it's older, so pick a value that fits your schedule. Leave the option out to turn caching off.
+
 To start over, drop `traces_raw` with `bq rm -t moderne_telemetry.traces_raw`. The next run rewrites every copy and recreates the table and the view.
 
 ## Making it production-grade
@@ -71,7 +73,6 @@ To start over, drop `traces_raw` with `bq rm -t moderne_telemetry.traces_raw`. T
 This example is minimal on purpose, so there are no metrics or alarms. It's a Python script, Cloud Storage, and a BigQuery external table, with nothing Moderne-specific in it, so add whatever your environment needs. A few things you might want:
 
 - Alerting on a non-zero exit of the job, and on a night that found nothing new.
-- Metadata caching. Every query over `traces_raw` lists the bucket first. Once the bucket holds tens of thousands of objects, BigLake [metadata caching](https://cloud.google.com/bigquery/docs/metadata-caching) takes that listing off the query path. The catch is that a newly copied file only shows up after the next cache refresh.
 - A native table if you query it heavily. A CSV external table reads every byte of every file a query touches. A [scheduled query](https://cloud.google.com/bigquery/docs/scheduling-queries) that appends each day's partitions from `traces` into a native table, partitioned by day and clustered by `type`, gives your dashboards columnar reads over the same columns.
 
 ## Other approaches
